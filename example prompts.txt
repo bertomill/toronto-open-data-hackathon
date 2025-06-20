@@ -1,0 +1,6 @@
+Example prompts:
+- Show me the total salary expenses year over year.
+- How much tax revenue was collected in 2024?
+- What deperatment does the city spend the most on?
+- How much has the budget grown year over year?
+- What program budget has grown the most?

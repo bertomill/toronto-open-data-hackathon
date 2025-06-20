@@ -1,0 +1,441 @@
+Product Requirements Document: Toronto Budget Navigator
+
+1. Product Overview
+1.1 Product Vision
+Toronto Budget Navigator is an AI-powered mobile and web application that democratizes access to Toronto's municipal budget data through natural language interactions. The application transforms dense municipal revenue and expense data into an intuitive, conversational experience that enables residents to understand how their tax dollars are allocated and spent.
+
+1.2 Problem Statement
+Toronto residents face significant barriers when trying to understand municipal budget information. Traditional budget documents are dense, technical, overwhelming, and not easily accessible in a web app format. Citizens often struggle to find specific information about municipal spending, revenue collection and trends over-time. Democratizing this information will help better inform the citizenry.
+
+1.3 Product Goals
+- Enable natural language querying of Toronto's 10-year budget dataset
+- Generate dynamic visualizations showing spending trends and patterns
+- Increase civic engagement through accessible budget information
+- Provide 24/7 access to budget insights without requiring staff intervention 
+- Support both English and French language
+
+2. Target Users
+2.1 Primary Personas
+Engaged Citizen (Primary)
+Demographics: Adults 25-65, various income levels
+Needs: Understanding how tax dollars are spent and how much tax is collected, comparing year-over-year changes
+Pain Points: Budget documents are too complex, lack of time to research or even access the data
+
+Civic Organizations (Secondary)
+Demographics: Non-profit organizations, community groups
+Needs: Data for advocacy, policy analysis, grant applications
+Pain Points: Difficulty extracting specific data points, manual analysis required
+
+Journalists and Researchers (Tertiary)
+Demographics: Media professionals, academic researchers
+Needs: Quick access to budget trends, comparative analysis
+Pain Points: Time-intensive data extraction, verification challenges
+
+3. Functional Requirements
+3.1 Core Features
+
+Natural Language Query Interface
+- Accept conversational questions about budget data in plain English 
+- Support questions like "How much did Toronto spend on police in 2023?" 
+- Handle comparative queries ("Show me library spending vs. parks spending")
+- Process temporal queries ("What was the trend in transportation spending over 10 years?")
+
+Dynamic Visualization Generation
+- Generate line charts for trend analysis over time 
+- Create pie charts for budget category breakdowns 
+- Produce bar charts for departmental comparisons 
+- Support customizable time ranges and data filters
+
+Google Sheets Integration
+- Connect to existing Google Sheets dataset via API 
+
+Support for multiple worksheets and data sources
+
+Data validation and error handling for corrupted entries
+
+Conversational Memory
+
+Maintain context across multiple queries in a session 
+- Remember previous questions to enable follow-up conversations
+- Support clarifying questions and refinements
+
+3.2 Advanced Features
+Multi-Modal Responses
+- Combine text explanations with visual charts
+
+Provide data source citations and methodology notes
+
+Include contextual information about budget categories 
+
+Personalization
+
+Allow users to save favorite queries and visualizations
+
+Create custom dashboards for frequently accessed information
+
+Set up notifications for budget updates in areas of interest
+
+Data Export Capabilities
+
+Export visualizations as PNG, PDF, or SVG formats
+
+Download underlying data as CSV or Excel files
+
+Share insights via social media or email
+
+4. Technical Requirements
+4.1 Architecture
+Frontend Stack
+
+React Native for cross-platform mobile development 
+
+React.js for web application
+
+Chart.js or D3.js for data visualization 
+
+Responsive design for mobile-first experience
+
+Backend Infrastructure
+
+Node.js with Express.js framework 
+
+Natural Language Processing using OpenAI GPT or Google DialogFlow 
+
+Google Sheets API for data integration 
+
+RESTful API architecture for frontend-backend communication
+
+AI/ML Components
+
+Large Language Model for query understanding and response generation 
+
+Intent recognition system for budget-related queries 
+
+Context management for conversational flow 
+
+Query-to-SQL translation for data retrieval
+
+4.2 Data Management
+Google Sheets Integration
+
+Read-only access to budget dataset 
+
+Support for multiple sheets (revenues, expenses, departments) 
+
+Data caching for improved performance
+
+Automatic schema detection and validation
+
+Data Processing
+
+ETL pipeline for data normalization and cleaning
+
+Support for Toronto's budget structure (tax-supported vs. rate-supported) 
+
+Historical data aggregation and trend calculation
+
+Data quality monitoring and error reporting
+
+4.3 Security and Privacy
+Data Protection
+
+No personal data collection beyond basic usage analytics 
+
+Secure API communications with HTTPS encryption
+
+Rate limiting to prevent abuse
+
+GDPR and privacy compliance measures
+
+Access Control
+
+Public access to budget data (no authentication required)
+
+Administrative interface for data management
+
+API key management for Google Sheets access
+
+5. User Experience Requirements
+5.1 Conversational Design
+Natural Language Understanding
+
+Support for various query formats and phrasings 
+
+Handle budget-specific terminology and abbreviations 
+
+Provide suggested questions for new users
+
+Error handling for unclear or ambiguous queries
+
+Response Design
+
+Clear, jargon-free explanations of budget concepts 
+
+Progressive disclosure of information (summary first, details on request)
+
+Contextual help and explanations for budget categories 
+
+Fallback responses for unsupported queries 
+
+5.2 Visualization Standards
+Chart Design Principles
+
+Accessible color schemes for colorblind users
+
+Clear labels and legends for all visualizations 
+
+Responsive charts that work on mobile devices
+
+Consistent styling across all chart types
+
+Interaction Design
+
+Tap/click interactions for chart exploration
+
+Zoom and pan capabilities for detailed analysis
+
+Export and share functionality for all visualizations
+
+Voice input support for accessibility
+
+6. Non-Functional Requirements
+6.1 Performance
+Response Times
+
+Text responses within 2 seconds 
+
+Chart generation within 5 seconds 
+
+Google Sheets data refresh within 10 seconds
+
+Mobile app launch time under 3 seconds
+
+Scalability
+
+Support for 10,000+ concurrent users
+
+Horizontal scaling capabilities for peak usage
+
+Efficient caching strategies for common queries
+
+CDN integration for static assets
+
+6.2 Availability and Reliability
+Uptime Requirements
+
+99.5% availability during business hours
+
+Graceful degradation during maintenance windows
+
+Automatic failover for critical components
+
+Real-time monitoring and alerting
+
+Error Handling
+
+Comprehensive error logging and monitoring
+
+User-friendly error messages 
+
+Automatic retry mechanisms for transient failures
+
+Backup data sources for critical information
+
+6.3 Accessibility
+WCAG Compliance
+
+Level AA accessibility standards 
+
+Screen reader compatibility
+
+Keyboard navigation support
+
+High contrast mode for visual accessibility
+
+Multilingual Support
+
+English and French language support (minimum) 
+
+Additional languages based on Toronto demographics
+
+Culturally appropriate content and examples
+
+Right-to-left text support for applicable languages
+
+7. Integration Requirements
+7.1 Data Sources
+Primary Integration
+
+Google Sheets API for budget dataset 
+
+Support for real-time data updates
+
+Multiple worksheet access for different budget categories
+
+Data validation and quality assurance
+
+Future Integrations
+
+Toronto Open Data portal for additional datasets
+
+Statistics Canada for comparative municipal data
+
+Provincial budget data for context
+
+Federal transfer payment information
+
+7.2 Third-Party Services
+AI/ML Services
+
+OpenAI API for natural language processing 
+
+Google Cloud AI for additional NLP capabilities 
+
+Chart generation libraries and services 
+
+Analytics platforms for usage tracking
+
+8. Success Metrics and KPIs
+8.1 User Engagement
+Usage Metrics
+
+Monthly active users (target: 50,000 in year 1)
+
+Average session duration (target: 5+ minutes)
+
+Query completion rate (target: 95%)
+
+Repeat user rate (target: 40%)
+
+Quality Metrics
+
+Query accuracy and relevance (target: 90%)
+
+User satisfaction score (target: 4.5/5)
+
+Chart generation success rate (target: 98%)
+
+Response time adherence (target: 95%)
+
+8.2 Civic Impact
+Engagement Indicators
+
+Number of budget-related inquiries to city staff
+
+Public meeting attendance and participation
+
+Media coverage and mentions
+
+Academic and research citations
+
+9. Development Timeline and Milestones
+9.1 Phase 1: MVP Development (Months 1-4)
+Basic natural language query interface
+
+Google Sheets integration
+
+Simple text responses
+
+Core chart generation (line, bar, pie) 
+
+Mobile-responsive web application
+
+9.2 Phase 2: Enhanced Features (Months 5-7)
+Native mobile applications
+
+Advanced conversational capabilities 
+
+Personalization features
+
+Data export functionality
+
+Performance optimization
+
+9.3 Phase 3: Advanced Capabilities (Months 8-12)
+Multilingual support 
+
+Predictive analytics and forecasting
+
+Integration with additional data sources
+
+Advanced visualization types
+
+Community features and sharing
+
+9.4 Phase 4: Scale and Optimization (Months 13+)
+Machine learning improvements
+
+Additional municipal partnerships
+
+Advanced analytics and reporting
+
+API for third-party developers
+
+Continuous enhancement based on user feedback
+
+10. Risk Assessment and Mitigation
+10.1 Technical Risks
+Data Quality Issues
+
+Risk: Inconsistent or incorrect budget data
+
+Mitigation: Automated data validation, manual review processes, clear data source documentation
+
+AI Model Limitations
+
+Risk: Inaccurate or inappropriate responses 
+
+Mitigation: Extensive testing, human oversight, clear disclaimers, feedback mechanisms
+
+10.2 User Adoption Risks
+Low Engagement
+
+Risk: Citizens not using the application
+
+Mitigation: Community outreach, partnerships with civic organizations, media campaigns 
+
+Complexity Perception
+
+Risk: Users finding budget topics too complex
+
+Mitigation: Progressive disclosure, educational content, guided tours, example queries
+
+10.3 Operational Risks
+Budget Data Changes
+
+Risk: Changes in budget structure or format
+
+Mitigation: Flexible data schema, automated detection of changes, version control
+
+Privacy Concerns
+
+Risk: User concerns about data collection
+
+Mitigation: Transparent privacy policy, minimal data collection, clear opt-out mechanisms 
+
+
+
+
+
+
+Example prompts:
+- Show me the total salary expenses year over year.
+- How much tax revenue was collected in 2024?
+- What deperatment does the city spend the most on?
+- How much has the budget grown year over year?
+- What program budget has grown the most?
+
+
+<system>
+You are a helpful data analyst with access to the city of Toronto annual budget data including revenue and expenses. Here is a description of what each header means:
+<headers>
+Program - Name of program, division or agency
+Service - A detailed account of key offerings that are associated with each program currently delivered by a division.
+Activity - A sub-set of the defined service, which includes unique processes and a discrete output delivered to the client(s)
+Category Name - Category of Expense / Revenue
+Sub-Category Name - Sub-Category of Expense / Revenue
+Commitment item - Commitment items classify budget transactions into revenue and expenditure items
+Amount - Revenues are represented as a negative number and expenses are represented as a positive number.
+Year - The year the budget item is related to.
+</system>
+
