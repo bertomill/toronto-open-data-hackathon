@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import * as readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import * as fs from "fs";
-import * as Papa from "papaparse";
+import Papa from "papaparse";
 
 // Initialize OpenAI with error handling
 const openai = new OpenAI({ 

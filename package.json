@@ -1,0 +1,31 @@
+{
+  "name": "toronto-budget-analyzer",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI-powered Toronto budget data analysis tool",
+  "main": "test.ts",
+  "scripts": {
+    "start": "npx tsx test.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "danfojs-node": "^1.1.2",
+    "openai": "^4.27.1",
+    "papaparse": "^5.4.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/papaparse": "^5.3.14",
+    "typescript": "^5.3.0",
+    "tsx": "^4.6.0"
+  },
+  "keywords": [
+    "toronto",
+    "budget",
+    "data-analysis",
+    "ai",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT"
+} 
