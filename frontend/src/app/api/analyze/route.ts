@@ -29,8 +29,9 @@ export async function POST(req: NextRequest) {
     const rootDir = path.join(process.cwd(), '..');
     
     // Execute the analysis using the Node.js backend with proper input piping
+    const safeQuery = query || '';
     const { stdout, stderr } = await execAsync(
-      `cd "${rootDir}" && echo "${query.replace(/"/g, '\\"')}" | npm start`,
+      `cd "${rootDir}" && echo "${safeQuery.replace(/"/g, '\\"')}" | npm start`,
       {
         timeout: 30000,
         maxBuffer: 1024 * 1024 * 10, // 10MB buffer

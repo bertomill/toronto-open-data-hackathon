@@ -12,8 +12,8 @@ interface AIAnalysisProps {
   query: string;
 }
 
-// Component to render Python code blocks with copy functionality
-function CodeBlock({ code }: { code: string }) {
+// Component to render code blocks with copy functionality
+function CodeBlock({ code, language = 'sql' }: { code: string; language?: string }) {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -27,7 +27,7 @@ function CodeBlock({ code }: { code: string }) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <Code className="w-4 h-4 text-green-400" />
-          <span className="text-sm text-green-400 font-medium">Python Script</span>
+          <span className="text-sm text-green-400 font-medium">{language.toUpperCase()} Query</span>
         </div>
         <button
           onClick={copyToClipboard}
@@ -46,22 +46,25 @@ function CodeBlock({ code }: { code: string }) {
 
 // Function to render message content with code block detection
 function MessageContent({ content }: { content: string }) {
-  const parts = content.split(/```python\n([\s\S]*?)\n```/);
+  const parts = content.split(/```(\w+)?\n([\s\S]*?)\n```/);
   
   return (
     <div>
       {parts.map((part, index) => {
-        if (index % 2 === 0) {
+        if (index % 3 === 0) {
           // Regular text
           return part ? (
             <div key={index} className="whitespace-pre-wrap">
               {part}
             </div>
           ) : null;
-        } else {
-          // Python code block
-          return <CodeBlock key={index} code={part} />;
+        } else if (index % 3 === 2) {
+          // Code block content
+          const language = parts[index - 1] || 'sql';
+          return <CodeBlock key={index} code={part} language={language} />;
         }
+        // Skip language indicators (index % 3 === 1)
+        return null;
       })}
     </div>
   );
@@ -87,39 +90,76 @@ export default function AIAnalysis({ data, query }: AIAnalysisProps) {
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/analyze', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: input.trim() }),
+        body: JSON.stringify({ 
+          messages: [...messages, userMessage].map(msg => ({
+            role: msg.role,
+            content: msg.content
+          }))
+        }),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
-      
-      const botMessage = {
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response stream available');
+      }
+
+      let assistantContent = '';
+      const assistantMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: result.response || 'I apologize, but I couldn\'t generate a response for your query.'
+        content: ''
       };
 
-      setMessages(prev => [...prev, botMessage]);
+      setMessages(prev => [...prev, assistantMessage]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('0:"')) {
+            // Extract the content from the streaming format
+            const match = line.match(/^0:"(.*)"/);
+            if (match) {
+              const content = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+              assistantContent += content;
+              
+              setMessages(prev => prev.map(msg => 
+                msg.id === assistantMessage.id 
+                  ? { ...msg, content: assistantContent }
+                  : msg
+              ));
+            }
+          }
+        }
+      }
+
     } catch (error) {
-      console.error('Analysis error:', error);
+      console.error('Chat error:', error);
       const errorMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `I encountered an error while analyzing your query. Please try again or rephrase your question.
+        content: `I encountered an error while processing your question. Please try again or rephrase your question.
 
-The Toronto budget analysis system can help you with:
-- Year-specific expense queries (e.g., "What were the 2023 expenses?")
-- Department spending analysis (e.g., "Police budget trends")
-- Utility cost trends (e.g., "Hydro costs over time")
-- Revenue analysis and comparisons
+I can help you analyze Toronto's budget data with questions like:
+- "What was Toronto's total budget in 2024?"
+- "How much did Toronto spend on police services?"
+- "Show me the trend in fire department spending over the years"
+- "What are the top 5 programs by spending?"
+- "How much revenue did Toronto collect last year?"
 
 Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
@@ -136,39 +176,74 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       const submitInitialQuery = async () => {
         setIsLoading(true);
         try {
-          const response = await fetch('/api/analyze', {
+          const userMessage = messages[0];
+          const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ query }),
+            body: JSON.stringify({ 
+              messages: [{ role: userMessage.role, content: userMessage.content }]
+            }),
           });
 
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
-          const result = await response.json();
-          
-          const botMessage = {
+          // Handle streaming response
+          const reader = response.body?.getReader();
+          if (!reader) {
+            throw new Error('No response stream available');
+          }
+
+          let assistantContent = '';
+          const assistantMessage = {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
-            content: result.response || 'I apologize, but I couldn\'t generate a response for your query.'
+            content: ''
           };
 
-          setMessages(prev => [...prev, botMessage]);
+          setMessages(prev => [...prev, assistantMessage]);
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = new TextDecoder().decode(value);
+            const lines = chunk.split('\n');
+
+            for (const line of lines) {
+              if (line.startsWith('0:"')) {
+                // Extract the content from the streaming format
+                const match = line.match(/^0:"(.*)"/);
+                if (match) {
+                  const content = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                  assistantContent += content;
+                  
+                  setMessages(prev => prev.map(msg => 
+                    msg.id === assistantMessage.id 
+                      ? { ...msg, content: assistantContent }
+                      : msg
+                  ));
+                }
+              }
+            }
+          }
+
         } catch (error) {
-          console.error('Analysis error:', error);
+          console.error('Initial query error:', error);
           const errorMessage = {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
             content: `I encountered an error while analyzing your query. Please try again or rephrase your question.
 
-The Toronto budget analysis system can help you with:
-- Year-specific expense queries (e.g., "What were the 2023 expenses?")
-- Department spending analysis (e.g., "Police budget trends")
-- Utility cost trends (e.g., "Hydro costs over time")
-- Revenue analysis and comparisons
+I can help you analyze Toronto's budget data with questions like:
+- "What was Toronto's total budget in 2024?"
+- "How much did Toronto spend on police services?"  
+- "Show me the trend in fire department spending over the years"
+- "What are the top 5 programs by spending?"
+- "How much revenue did Toronto collect last year?"
 
 Error: ${error instanceof Error ? error.message : 'Unknown error'}`
           };
@@ -189,7 +264,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         <h3 className="text-lg font-semibold text-gray-900">Toronto Budget AI Analyst</h3>
         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center space-x-1">
           <Database className="w-3 h-3" />
-          <span>Live Data Analysis</span>
+          <span>AI-Powered SQL Analysis</span>
         </span>
       </div>
 
@@ -198,57 +273,50 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         {messages.length === 0 && (
           <div className="text-center py-8">
             <Bot className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Ask me anything about Toronto&apos;s budget data!</p>
-            <p className="text-sm text-gray-400 mt-2">
-              I&apos;ll analyze the live dataset and provide detailed insights with data-driven answers.
-            </p>
+            <p className="text-gray-500">Ask me anything about Toronto's budget data!</p>
           </div>
         )}
-        
+
         {messages.map((message) => (
-          <div key={message.id} className={`flex space-x-3 ${
-            message.role === 'user' ? 'justify-end' : 'justify-start'
-          }`}>
-            <div className={`flex space-x-3 max-w-4xl ${
-              message.role === 'user' ? 'flex-row-reverse space-x-reverse' : 'flex-row'
-            }`}>
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                message.role === 'user' 
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-600'
-              }`}>
-                {message.role === 'user' ? (
-                  <User className="w-4 h-4" />
-                ) : (
-                  <Bot className="w-4 h-4" />
-                )}
+          <div
+            key={message.id}
+            className={`flex items-start space-x-3 ${
+              message.role === 'user' ? 'justify-end' : 'justify-start'
+            }`}
+          >
+            {message.role === 'assistant' && (
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <Bot className="w-4 h-4 text-blue-600" />
               </div>
-              <div className={`px-4 py-3 rounded-2xl ${
+            )}
+            
+            <div
+              className={`max-w-3xl px-4 py-3 rounded-lg ${
                 message.role === 'user'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-800'
-              }`}>
-                {message.role === 'user' ? (
-                  <div className="whitespace-pre-wrap">{message.content}</div>
-                ) : (
-                  <MessageContent content={message.content} />
-                )}
-              </div>
+                  ? 'bg-blue-600 text-white ml-auto'
+                  : 'bg-gray-50 text-gray-900'
+              }`}
+            >
+              <MessageContent content={message.content} />
             </div>
+
+            {message.role === 'user' && (
+              <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <User className="w-4 h-4 text-gray-600" />
+              </div>
+            )}
           </div>
         ))}
-        
+
         {isLoading && (
-          <div className="flex space-x-3 justify-start">
-            <div className="flex space-x-3 max-w-3xl">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gray-100 text-gray-600">
-                <Bot className="w-4 h-4" />
-              </div>
-              <div className="px-4 py-3 rounded-2xl bg-gray-100 text-gray-800">
-                <div className="flex items-center space-x-2">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Analyzing live budget data...</span>
-                </div>
+          <div className="flex items-start space-x-3">
+            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <Bot className="w-4 h-4 text-blue-600" />
+            </div>
+            <div className="bg-gray-50 px-4 py-3 rounded-lg">
+              <div className="flex items-center space-x-2 text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Analyzing your question...</span>
               </div>
             </div>
           </div>
@@ -256,31 +324,24 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       </div>
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="flex space-x-3">
+      <form onSubmit={handleSubmit} className="flex items-center space-x-3">
         <input
+          type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about budget trends, spending, or compare departments..."
-          className="flex-1 px-4 py-3 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Ask a follow-up question..."
+          className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
           disabled={isLoading}
         />
         <button
           type="submit"
-          disabled={isLoading || !input.trim()}
-          className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          disabled={!input.trim() || isLoading}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-4 h-4" />
+          <span>Send</span>
         </button>
       </form>
-
-      {/* Dataset Context */}
-      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-        <p className="text-sm text-blue-700">
-          <strong>Live Analysis:</strong> Connected to Toronto budget dataset with {data.length.toLocaleString()} records from 2019-2024.
-          <br />
-          <strong>Powered by:</strong> Advanced data analysis engine with real-time query processing.
-        </p>
-      </div>
     </div>
   );
 } 

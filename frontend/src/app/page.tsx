@@ -55,7 +55,8 @@ export default function Home() {
     let total = 0;
 
     budgetData.forEach((row) => {
-      const amount = parseFloat(row.Amount.replace(/,/g, '')) || 0;
+      const amountStr = row.Amount || '0';
+      const amount = parseFloat(amountStr.replace(/,/g, '')) || 0;
       total += Math.abs(amount);
     });
 
@@ -216,13 +217,13 @@ export default function Home() {
           {/* Logo and Welcome */}
           {!showAI && (
             <div className="text-center mb-16">
-              <div className="w-32 h-32 mx-auto mb-8 relative bg-white/90 backdrop-blur-sm rounded-full p-4 shadow-lg border border-gray-200">
+              <div className="w-32 h-32 mx-auto mb-8 relative bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 overflow-hidden">
                 <Image
                   src="/dollarsense.png"
                   alt="DollarSense"
-                  width={96}
-                  height={96}
-                  className="object-contain w-full h-full"
+                  width={128}
+                  height={128}
+                  className="object-cover w-full h-full"
                 />
               </div>
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-200 shadow-sm max-w-3xl mx-auto">
@@ -334,7 +335,7 @@ export default function Home() {
                     <input
                       type="text"
                       placeholder="Ask me anything about Toronto's budget data..."
-                      className="flex-1 bg-transparent outline-none text-gray-700 placeholder-gray-500"
+                      className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
                       onKeyPress={(e) => {
                         if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                           handleQuerySubmit(e.currentTarget.value);

@@ -1,0 +1,11 @@
+{
+  "name": "budget-scripts",
+  "type": "module",
+  "scripts": {
+    "convert": "node csv-to-sqlite.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "papaparse": "^5.5.3"
+  }
+} 
