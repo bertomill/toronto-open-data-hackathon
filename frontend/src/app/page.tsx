@@ -5,6 +5,7 @@ import Papa from 'papaparse';
 import { TrendingUp, MessageCircle, BarChart3, Search } from 'lucide-react';
 import Image from 'next/image';
 import AIAnalysis from './components/AIAnalysis';
+import TorontoBudgetHero from '@/components/ui/TorontoBudgetHero';
 
 interface BudgetData {
   Program: string;
@@ -26,6 +27,7 @@ export default function Home() {
   const [showAI, setShowAI] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState<string>('');
   const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
+  const [showHero, setShowHero] = useState(true);
 
   const loadData = async () => {
     try {
@@ -77,6 +79,15 @@ export default function Home() {
   const handleQuerySubmit = (query: string) => {
     setSelectedQuery(query);
     setShowAI(true);
+    setShowHero(false);
+  };
+
+  const handleStartExploring = () => {
+    // Just scroll to the search section, keep hero visible
+    const searchSection = document.getElementById('search-section');
+    if (searchSection) {
+      searchSection.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   const examplePrompts = [
@@ -175,91 +186,113 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white relative">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 opacity-15"
-        style={{
-          backgroundImage: "url('/Toronto-cartoon.png')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      />
-      
-      {/* Content Overlay */}
-      <div className="relative z-10">
-        {/* Minimal Header */}
-        <header className="px-6 py-4 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 relative bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
-                  <Image
-                    src="/dollarsense.png"
-                    alt="DollarSense"
-                    width={40}
-                    height={40}
-                    className="object-cover w-full h-full"
-                  />
+    <div className="min-h-screen bg-white">
+      {/* Show Hero Section */}
+      {showHero && !showAI && (
+        <div className="relative">
+          <TorontoBudgetHero onStartExploring={handleStartExploring} />
+        </div>
+      )}
+
+      {/* Main Content Section - Always show unless in AI mode */}
+      {!showAI && (
+        <div id="search-section">
+          {/* Background Image for main content - only show when hero is not visible */}
+          {!showHero && (
+            <div 
+              className="absolute inset-0 opacity-15"
+              style={{
+                backgroundImage: "url('/Toronto-cartoon.png')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              }}
+            />
+          )}
+          
+          {/* Content Overlay */}
+          <div className="relative z-10">
+            {/* Minimal Header - only show when hero is not visible */}
+            {!showHero && (
+              <header className="px-6 py-4 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+                <div className="max-w-4xl mx-auto">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 relative bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
+                        <Image
+                          src="/dollarsense.png"
+                          alt="DollarSense"
+                          width={40}
+                          height={40}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                      <span className="text-xl font-semibold text-gray-800">DollarSense</span>
+                    </div>
+                    <div className="text-sm text-gray-600 font-medium bg-gray-100/80 px-3 py-1 rounded-full">
+                      Toronto Budget Explorer
+                    </div>
+                  </div>
                 </div>
-                <span className="text-xl font-semibold text-gray-800">DollarSense</span>
-              </div>
-              <div className="text-sm text-gray-600 font-medium bg-gray-100/80 px-3 py-1 rounded-full">
-                Toronto Budget Explorer
-              </div>
-            </div>
-          </div>
-        </header>
+              </header>
+            )}
 
-        {/* Main Content */}
-        <div className="max-w-6xl mx-auto px-6 pt-16 pb-8">
-          {/* Logo and Welcome */}
-          {!showAI && (
-            <div className="text-center mb-16">
-              <div className="w-32 h-32 mx-auto mb-8 relative bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 overflow-hidden">
-                <Image
-                  src="/dollarsense.png"
-                  alt="DollarSense"
-                  width={128}
-                  height={128}
-                  className="object-cover w-full h-full"
-                />
-              </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-200 shadow-sm max-w-3xl mx-auto">
-                <h1 className="text-5xl font-normal text-gray-800 mb-6">
-                  Hello there
-                </h1>
-                <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal">
-                  What would you like to know about Toronto&apos;s budget? I can help you analyze spending patterns, 
-                  compare programs, or explore financial trends from 2019 to 2024.
-                </p>
-              </div>
-            </div>
-          )}
+            {/* Main Content */}
+            <div className="max-w-6xl mx-auto px-6 pt-16 pb-8">
+              {/* Logo and Welcome - only show when hero is not visible */}
+              {!showHero && (
+                <div className="text-center mb-16">
+                  <div className="w-32 h-32 mx-auto mb-8 relative bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 overflow-hidden">
+                    <Image
+                      src="/dollarsense.png"
+                      alt="DollarSense"
+                      width={128}
+                      height={128}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                  <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-200 shadow-sm max-w-3xl mx-auto">
+                    <h1 className="text-5xl font-normal text-gray-800 mb-6">
+                      Hello there
+                    </h1>
+                    <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal">
+                      What would you like to know about Toronto&apos;s budget? I can help you analyze spending patterns, 
+                      compare programs, or explore financial trends from 2019 to 2024.
+                    </p>
+                  </div>
+                </div>
+              )}
 
-          {/* AI Analysis Component */}
-          {showAI && (
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-6">
-                <button
-                  onClick={() => {
-                    setShowAI(false);
-                    setSelectedQuery('');
-                  }}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
-                >
-                  <span>←</span>
-                  <span>Back to search</span>
-                </button>
+              {/* Search Input - Now prominently displayed */}
+              <div className="mb-12" id="search-input">
+                <div className="relative max-w-2xl mx-auto">
+                  <div className="flex items-center space-x-4 px-6 py-4 border border-gray-200 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
+                    <MessageCircle className="w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Ask me anything about Toronto's budget data..."
+                      className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          handleQuerySubmit(e.currentTarget.value);
+                        }
+                      }}
+                    />
+                    <button 
+                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                      onClick={(e) => {
+                        const input = e.currentTarget.parentElement?.querySelector('input');
+                        if (input && input.value.trim()) {
+                          handleQuerySubmit(input.value);
+                        }
+                      }}
+                    >
+                      <Search className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <AIAnalysis data={data} query={selectedQuery} />
-            </div>
-          )}
 
-          {/* Search and Suggestions - Only show when AI is not active */}
-          {!showAI && (
-            <>
               {/* Suggestion Categories */}
               <div className="grid md:grid-cols-3 gap-8 mb-16">
                 {analysisOptions.map((category) => {
@@ -327,36 +360,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Search Input */}
-              <div className="mb-12">
-                <div className="relative max-w-2xl mx-auto">
-                  <div className="flex items-center space-x-4 px-6 py-4 border border-gray-200 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
-                    <MessageCircle className="w-5 h-5 text-gray-400" />
-                    <input
-                      type="text"
-                      placeholder="Ask me anything about Toronto's budget data..."
-                      className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                          handleQuerySubmit(e.currentTarget.value);
-                        }
-                      }}
-                    />
-                    <button 
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                      onClick={(e) => {
-                        const input = e.currentTarget.parentElement?.querySelector('input');
-                        if (input && input.value.trim()) {
-                          handleQuerySubmit(input.value);
-                        }
-                      }}
-                    >
-                      <Search className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
               {/* Dataset Stats */}
               <div className="bg-gray-50/90 backdrop-blur-sm rounded-3xl p-8 border border-gray-100">
                 <h3 className="text-lg font-medium text-gray-800 mb-6 text-center">Dataset Overview</h3>
@@ -379,20 +382,80 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </>
-          )}
-        </div>
+            </div>
 
-        {/* Footer */}
-        {!showAI && (
-          <footer className="text-center py-8 px-6">
-            <p className="text-sm text-gray-500">
-              DollarSense may display inaccurate info, including about budget data, so double-check responses.{' '}
-              <span className="underline cursor-pointer hover:text-gray-700">Privacy Notice</span>
-            </p>
-          </footer>
-        )}
-      </div>
+            {/* Footer */}
+            <footer className="text-center py-8 px-6">
+              <p className="text-sm text-gray-500">
+                DollarSense may display inaccurate info, including about budget data, so double-check responses.{' '}
+                <span className="underline cursor-pointer hover:text-gray-700">Privacy Notice</span>
+              </p>
+            </footer>
+          </div>
+        </div>
+      )}
+
+      {/* AI Analysis Section - Only show when AI is active */}
+      {showAI && (
+        <div className="min-h-screen bg-white">
+          {/* Background Image for AI content */}
+          <div 
+            className="absolute inset-0 opacity-15"
+            style={{
+              backgroundImage: "url('/Toronto-cartoon.png')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat'
+            }}
+          />
+          
+          {/* Content Overlay */}
+          <div className="relative z-10">
+            {/* Header for AI mode */}
+            <header className="px-6 py-4 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+              <div className="max-w-4xl mx-auto">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 relative bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
+                      <Image
+                        src="/dollarsense.png"
+                        alt="DollarSense"
+                        width={40}
+                        height={40}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <span className="text-xl font-semibold text-gray-800">DollarSense</span>
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium bg-gray-100/80 px-3 py-1 rounded-full">
+                    Toronto Budget Explorer
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            {/* AI Analysis Content */}
+            <div className="max-w-6xl mx-auto px-6 pt-16 pb-8">
+              <div className="mb-8">
+                <div className="flex items-center justify-between mb-6">
+                  <button
+                    onClick={() => {
+                      setShowAI(false);
+                      setSelectedQuery('');
+                      setShowHero(true);
+                    }}
+                    className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+                  >
+                    <span>←</span>
+                    <span>Back to search</span>
+                  </button>
+                </div>
+                <AIAnalysis data={data} query={selectedQuery} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

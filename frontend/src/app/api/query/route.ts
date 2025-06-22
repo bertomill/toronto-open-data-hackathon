@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai';
-import { generateObject, generateText } from 'ai';
+import { generateObject } from 'ai';
 import { z } from 'zod';
 import { 
   executeQuery, 
@@ -11,22 +11,17 @@ import {
 
 export const runtime = 'nodejs';
 
-// Response schema for structured SQL generation
+// Simplified response schema
 const QueryResponseSchema = z.object({
   sql: z.string().describe('The SQL query to execute'),
-  explanation: z.string().describe('Plain English explanation of what the query does'),
+  answer: z.string().describe('Natural language answer to the user question'),
   queryType: z.enum(['summary', 'trend', 'comparison', 'ranking', 'specific']).describe('Type of query being performed'),
   confidence: z.number().min(0).max(1).describe('Confidence level in the generated SQL (0-1)')
 });
 
-interface ChatMessage {
-  role: string;
-  content: string;
-}
-
 export async function POST(req: Request) {
   try {
-    const { question, context = [] } = await req.json();
+    const { question } = await req.json();
 
     if (!question || typeof question !== 'string') {
       return Response.json({ error: 'Question is required' }, { status: 400 });
@@ -34,10 +29,10 @@ export async function POST(req: Request) {
 
     // Get database context
     const stats = getDatabaseStats();
-    const programs = getPrograms().slice(0, 20); // Top 20 programs for context
+    const programs = getPrograms().slice(0, 20);
 
-    // Generate SQL query using AI
-    const systemPrompt = `You are a SQL expert specializing in Toronto municipal budget data analysis. 
+    // Generate SQL query and answer in one AI call
+    const systemPrompt = `You are a Toronto budget data analyst. Generate a SQL query and provide a direct answer.
 
 ${DATABASE_SCHEMA}
 
@@ -52,44 +47,40 @@ Database Statistics:
 Available Programs (sample):
 ${programs.slice(0, 10).map(p => `- ${p}`).join('\n')}
 
-IMPORTANT RULES:
-1. Only generate SELECT queries - no INSERT, UPDATE, DELETE, DROP, etc.
-2. Use the exact table name: budget_data
+RULES:
+1. Only SELECT queries - no INSERT, UPDATE, DELETE, DROP
+2. Table name: budget_data
 3. Positive amounts = expenses, negative amounts = revenue
-4. Use LIKE '%keyword%' for text searching (case-insensitive)
-5. Always include appropriate GROUP BY when using aggregation
-6. Format large numbers with proper grouping
-7. Return confidence < 0.7 if the question is unclear or impossible to answer with this data
+4. Use LIKE '%keyword%' for text search
+5. Include GROUP BY with aggregations
+6. Set confidence < 0.5 only if question is completely unclear
 
-Generate a SQL query to answer the user's question about Toronto's budget data.`;
+Generate SQL and provide a conversational answer with specific numbers.`;
 
     const result = await generateObject({
       model: openai('gpt-4o-mini'),
       system: systemPrompt,
       prompt: `Question: ${question}
-      
-Context from previous conversation:
-${context.map((msg: ChatMessage) => `${msg.role}: ${msg.content}`).join('\n')}
 
-Generate a SQL query to answer this question about Toronto's budget data.`,
+Generate SQL to answer this and provide a clear response with specific data.`,
       schema: QueryResponseSchema,
     });
 
-    const { sql, explanation, queryType, confidence } = result.object;
+    const { sql, answer, queryType, confidence } = result.object;
 
-    // If confidence is too low, return a helpful response
-    if (confidence < 0.7) {
+    // Lower confidence threshold for better reliability
+    if (confidence < 0.5) {
       return Response.json({
         success: false,
-        error: 'Query confidence too low',
-        suggestion: explanation,
+        error: 'Question unclear',
+        suggestion: answer,
         confidence,
-        availableQueries: [
+        examples: [
           "What was Toronto's total budget in 2024?",
-          "How much did Toronto spend on police services?",
-          "Show me the trend in fire department spending over the years",
-          "What are the top 5 programs by spending in 2023?",
-          "How much revenue did Toronto collect in 2024?"
+          "How much did Toronto spend on police?",
+          "Show me fire department spending trends",
+          "Top 5 programs by spending in 2023",
+          "Toronto's revenue in 2024"
         ]
       });
     }
@@ -102,40 +93,23 @@ Generate a SQL query to answer this question about Toronto's budget data.`,
       console.error('SQL execution error:', error);
       return Response.json({
         success: false,
-        error: 'Failed to execute query',
-        details: error instanceof Error ? error.message : 'Unknown error',
-        sql
+        error: 'Query execution failed',
+        sql,
+        suggestion: "Try rephrasing your question or ask about Toronto's budget, spending, or revenue."
       }, { status: 500 });
     }
 
-    // Generate a natural language response
-    const responsePrompt = `Based on this SQL query and results, provide a clear, conversational answer to the user's question.
-
-User Question: ${question}
-SQL Query: ${sql}
-Query Results: ${JSON.stringify(queryResults.slice(0, 10))} ${queryResults.length > 10 ? `... (${queryResults.length} total rows)` : ''}
-
-Provide a natural, informative response that:
-1. Directly answers the user's question
-2. Includes specific numbers/amounts when relevant
-3. Provides context or insights about the data
-4. Is conversational and easy to understand
-5. Mentions if this is showing expenses vs revenue when relevant
-
-Format large numbers with commas (e.g., $1,234,567).`;
-
-    const aiResponse = await generateText({
-      model: openai('gpt-4o-mini'),
-      prompt: responsePrompt,
-    });
+    // Update the answer with actual results
+    const finalAnswer = queryResults.length > 0 
+      ? `${answer}\n\nBased on ${queryResults.length} records found.`
+      : "No data found matching your query. Try asking about a different time period or department.";
 
     return Response.json({
       success: true,
-      answer: aiResponse.text,
+      answer: finalAnswer,
       data: queryResults,
       query: {
         sql,
-        explanation,
         type: queryType,
         confidence
       },
@@ -150,7 +124,7 @@ Format large numbers with commas (e.g., $1,234,567).`;
     return Response.json({
       success: false,
       error: 'Internal server error',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      suggestion: "Please try asking a simpler question about Toronto's budget."
     }, { status: 500 });
   }
 } 
