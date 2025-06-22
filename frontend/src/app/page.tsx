@@ -27,10 +27,6 @@ export default function Home() {
   const [selectedQuery, setSelectedQuery] = useState<string>('');
   const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       const response = await fetch('/toronto_budget_combined_2024_to_2019.csv');
@@ -50,6 +46,10 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const processData = (budgetData: BudgetData[]) => {
     let total = 0;

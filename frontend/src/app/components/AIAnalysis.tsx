@@ -70,7 +70,7 @@ function MessageContent({ content }: { content: string }) {
   );
 }
 
-export default function AIAnalysis({ data, query }: AIAnalysisProps) {
+export default function AIAnalysis({ query }: AIAnalysisProps) {
   const [messages, setMessages] = useState<Array<{id: string, role: string, content: string}>>(() => {
     if (query) {
       return [{ id: '1', role: 'user', content: query }];
@@ -238,8 +238,8 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
             role: 'assistant',
             content: `I encountered an error while analyzing your query. Please try again or rephrase your question.
 
-I can help you analyze Toronto's budget data with questions like:
-- "What was Toronto's total budget in 2024?"
+I can help you analyze Toronto&apos;s budget data with questions like:
+- "What was Toronto&apos;s total budget in 2024?"
 - "How much did Toronto spend on police services?"  
 - "Show me the trend in fire department spending over the years"
 - "What are the top 5 programs by spending?"
@@ -255,7 +255,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       
       submitInitialQuery();
     }
-  }, [query, messages.length]);
+  }, [query, messages]);
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -273,7 +273,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         {messages.length === 0 && (
           <div className="text-center py-8">
             <Bot className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Ask me anything about Toronto's budget data!</p>
+            <p className="text-gray-500">Ask me anything about Toronto&apos;s budget data!</p>
           </div>
         )}
 
