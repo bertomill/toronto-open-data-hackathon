@@ -9,6 +9,8 @@ import TorontoBudgetHero from '@/components/ui/TorontoBudgetHero';
 import Sidebar from '@/components/ui/Sidebar';
 import DataDispensations from '@/components/DataDispensations';
 import DataViewer from '@/components/DataViewer';
+import HowItWorks from '@/components/HowItWorks';
+import { cn } from '@/lib/utils';
 
 interface BudgetData {
   Program: string;
@@ -32,6 +34,7 @@ export default function Home() {
   const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
   const [showHero, setShowHero] = useState(true);
   const [currentPage, setCurrentPage] = useState('home');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const loadData = async () => {
     try {
@@ -98,6 +101,10 @@ export default function Home() {
     setCurrentPage(page);
     setShowAI(false);
     setShowHero(page === 'home');
+  };
+
+  const handleSidebarCollapseChange = (collapsed: boolean) => {
+    setSidebarCollapsed(collapsed);
   };
 
   const examplePrompts = [
@@ -198,10 +205,17 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white flex">
       {/* Sidebar */}
-      <Sidebar currentPage={currentPage} onPageChange={handlePageChange} />
+      <Sidebar 
+        currentPage={currentPage} 
+        onPageChange={handlePageChange}
+        onCollapseChange={handleSidebarCollapseChange}
+      />
       
       {/* Main Content */}
-      <div className="flex-1 md:ml-64">
+      <div className={cn(
+        "flex-1 transition-all duration-300",
+        sidebarCollapsed ? "md:ml-20" : "md:ml-64"
+      )}>
         {/* Home Page */}
         {currentPage === 'home' && (
           <>
@@ -485,6 +499,11 @@ export default function Home() {
         {/* Data Viewer Page */}
         {currentPage === 'viewer' && (
           <DataViewer data={data} />
+        )}
+
+        {/* How It Works Page */}
+        {currentPage === 'how-it-works' && (
+          <HowItWorks />
         )}
       </div>
     </div>
