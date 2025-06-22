@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Send, Bot, User, Loader2, Copy, Code, Database } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Send, Bot, User, Loader2, Copy, Code, Database, Search, Brain, Zap } from 'lucide-react';
 
 interface BudgetRecord {
   [key: string]: string | number;
@@ -11,6 +11,14 @@ interface AIAnalysisProps {
   data: BudgetRecord[];
   query: string;
 }
+
+// Loading steps with icons and messages
+const LOADING_STEPS = [
+  { icon: Search, message: "Analyzing your question...", duration: 1000 },
+  { icon: Database, message: "Searching budget database...", duration: 1500 },
+  { icon: Brain, message: "Understanding data patterns...", duration: 1200 },
+  { icon: Zap, message: "Preparing response...", duration: 800 }
+];
 
 // Component to render code blocks with copy functionality
 function CodeBlock({ code, language = 'sql' }: { code: string; language?: string }) {
@@ -70,6 +78,48 @@ function MessageContent({ content }: { content: string }) {
   );
 }
 
+// Loading component with animated steps
+function LoadingSteps({ currentStep }: { currentStep: number }) {
+  return (
+    <div className="flex items-start space-x-3">
+      <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+        <Bot className="w-4 h-4 text-blue-600" />
+      </div>
+      <div className="bg-gray-50 px-4 py-3 rounded-lg">
+        {LOADING_STEPS.map((step, index) => {
+          const IconComponent = step.icon;
+          const isActive = index === currentStep;
+          const isCompleted = index < currentStep;
+          
+          return (
+            <div 
+              key={index} 
+              className={`flex items-center space-x-2 transition-all duration-300 ${
+                index > 0 ? 'mt-2' : ''
+              } ${
+                isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
+              }`}
+            >
+              {isActive ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : isCompleted ? (
+                <div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                </div>
+              ) : (
+                <IconComponent className="w-4 h-4" />
+              )}
+              <span className={`text-sm ${isActive ? 'font-medium' : ''}`}>
+                {step.message}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export default function AIAnalysis({ query }: AIAnalysisProps) {
   const [messages, setMessages] = useState<Array<{id: string, role: string, content: string}>>(() => {
     if (query) {
@@ -79,6 +129,18 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
   });
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
+  const initialQueryExecuted = useRef(false);
+
+  const advanceLoadingStep = () => {
+    setLoadingStep(prev => {
+      if (prev < LOADING_STEPS.length - 1) {
+        setTimeout(() => advanceLoadingStep(), LOADING_STEPS[prev + 1]?.duration || 1000);
+        return prev + 1;
+      }
+      return prev;
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +150,10 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setLoadingStep(0);
+    
+    // Start loading animation
+    setTimeout(() => advanceLoadingStep(), LOADING_STEPS[0].duration);
 
     try {
       const response = await fetch('/api/chat', {
@@ -135,7 +201,7 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
             const match = line.match(/^0:"(.*)"/);
             if (match) {
               const content = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
-              assistantContent += content;
+              assistantContent = content; // Use the full content, not append
               
               setMessages(prev => prev.map(msg => 
                 msg.id === assistantMessage.id 
@@ -166,15 +232,23 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
+      setLoadingStep(0);
     }
   };
 
   // Handle initial query
   useEffect(() => {
-    if (query && messages.length === 1 && messages[0].role === 'user') {
+    if (query && messages.length === 1 && messages[0].role === 'user' && !initialQueryExecuted.current) {
+      initialQueryExecuted.current = true;
+      
       // Simulate form submission for initial query
       const submitInitialQuery = async () => {
         setIsLoading(true);
+        setLoadingStep(0);
+        
+        // Start loading animation
+        setTimeout(() => advanceLoadingStep(), LOADING_STEPS[0].duration);
+        
         try {
           const userMessage = messages[0];
           const response = await fetch('/api/chat', {
@@ -219,7 +293,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
                 const match = line.match(/^0:"(.*)"/);
                 if (match) {
                   const content = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
-                  assistantContent += content;
+                  assistantContent = content; // Use the full content, not append
                   
                   setMessages(prev => prev.map(msg => 
                     msg.id === assistantMessage.id 
@@ -238,8 +312,8 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
             role: 'assistant',
             content: `I encountered an error while analyzing your query. Please try again or rephrase your question.
 
-I can help you analyze Toronto&apos;s budget data with questions like:
-- "What was Toronto&apos;s total budget in 2024?"
+I can help you analyze Toronto's budget data with questions like:
+- "What was Toronto's total budget in 2024?"
 - "How much did Toronto spend on police services?"  
 - "Show me the trend in fire department spending over the years"
 - "What are the top 5 programs by spending?"
@@ -250,12 +324,13 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
           setMessages(prev => [...prev, errorMessage]);
         } finally {
           setIsLoading(false);
+          setLoadingStep(0);
         }
       };
       
       submitInitialQuery();
     }
-  }, [query, messages]);
+  }, [query]);
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -273,7 +348,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         {messages.length === 0 && (
           <div className="text-center py-8">
             <Bot className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Ask me anything about Toronto&apos;s budget data!</p>
+            <p className="text-gray-500">Ask me anything about Toronto's budget data!</p>
           </div>
         )}
 
@@ -309,17 +384,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         ))}
 
         {isLoading && (
-          <div className="flex items-start space-x-3">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <Bot className="w-4 h-4 text-blue-600" />
-            </div>
-            <div className="bg-gray-50 px-4 py-3 rounded-lg">
-              <div className="flex items-center space-x-2 text-gray-500">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Analyzing your question...</span>
-              </div>
-            </div>
-          </div>
+          <LoadingSteps currentStep={loadingStep} />
         )}
       </div>
 

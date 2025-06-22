@@ -9,6 +9,42 @@ interface ChatMessage {
   id?: string;
 }
 
+// Function to create a streaming response from text
+function createStreamingResponse(text: string) {
+  const encoder = new TextEncoder();
+  
+  const stream = new ReadableStream({
+    start(controller) {
+      // Split text into chunks for streaming effect
+      const words = text.split(' ');
+      let currentText = '';
+      
+      const sendChunk = (index: number) => {
+        if (index < words.length) {
+          currentText += (index > 0 ? ' ' : '') + words[index];
+          const chunk = `0:"${currentText.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`;
+          controller.enqueue(encoder.encode(chunk));
+          
+          // Send next chunk after a small delay
+          setTimeout(() => sendChunk(index + 1), 50);
+        } else {
+          controller.close();
+        }
+      };
+      
+      sendChunk(0);
+    }
+  });
+  
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    }
+  });
+}
+
 export async function POST(req: Request) {
   try {
     const { messages }: { messages: ChatMessage[] } = await req.json();
@@ -36,11 +72,9 @@ export async function POST(req: Request) {
       console.warn('Budget query failed:', error);
     }
 
-    // If we got budget data, return it directly
+    // If we got budget data, return it as a streaming response
     if (budgetResponse?.success) {
-      return new Response(budgetResponse.answer, {
-        headers: { 'Content-Type': 'text/plain' }
-      });
+      return createStreamingResponse(budgetResponse.answer);
     }
 
     // Fallback to general assistance if no budget data found
@@ -69,12 +103,8 @@ Be conversational and helpful. If the question wasn't about Toronto's budget, tr
   } catch (error) {
     console.error('Chat API error:', error);
     
-    return new Response(
-      'Sorry, I encountered an error. Please try asking about Toronto\'s budget data, such as "What was the total budget in 2024?" or "How much was spent on police?"',
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'text/plain' }
-      }
-    );
+    // Return error as streaming response for consistency
+    const errorText = 'Sorry, I encountered an error. Please try asking about Toronto\'s budget data, such as "What was the total budget in 2024?" or "How much was spent on police?"';
+    return createStreamingResponse(errorText);
   }
 } 

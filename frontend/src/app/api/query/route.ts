@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai';
-import { generateObject } from 'ai';
+import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
 import { 
   executeQuery, 
@@ -11,10 +11,9 @@ import {
 
 export const runtime = 'nodejs';
 
-// Simplified response schema
-const QueryResponseSchema = z.object({
+// Schema for SQL generation only
+const SQLGenerationSchema = z.object({
   sql: z.string().describe('The SQL query to execute'),
-  answer: z.string().describe('Natural language answer to the user question'),
   queryType: z.enum(['summary', 'trend', 'comparison', 'ranking', 'specific']).describe('Type of query being performed'),
   confidence: z.number().min(0).max(1).describe('Confidence level in the generated SQL (0-1)')
 });
@@ -31,8 +30,8 @@ export async function POST(req: Request) {
     const stats = getDatabaseStats();
     const programs = getPrograms().slice(0, 20);
 
-    // Generate SQL query and answer in one AI call
-    const systemPrompt = `You are a Toronto budget data analyst. Generate a SQL query and provide a direct answer.
+    // First, generate just the SQL query
+    const sqlGenerationPrompt = `You are a Toronto budget data analyst. Generate a SQL query to answer the user's question.
 
 ${DATABASE_SCHEMA}
 
@@ -55,25 +54,25 @@ RULES:
 5. Include GROUP BY with aggregations
 6. Set confidence < 0.5 only if question is completely unclear
 
-Generate SQL and provide a conversational answer with specific numbers.`;
+Generate ONLY the SQL query to answer this question.`;
 
-    const result = await generateObject({
+    const sqlResult = await generateObject({
       model: openai('gpt-4o-mini'),
-      system: systemPrompt,
+      system: sqlGenerationPrompt,
       prompt: `Question: ${question}
 
-Generate SQL to answer this and provide a clear response with specific data.`,
-      schema: QueryResponseSchema,
+Generate the appropriate SQL query to answer this question.`,
+      schema: SQLGenerationSchema,
     });
 
-    const { sql, answer, queryType, confidence } = result.object;
+    const { sql, queryType, confidence } = sqlResult.object;
 
     // Lower confidence threshold for better reliability
     if (confidence < 0.5) {
       return Response.json({
         success: false,
         error: 'Question unclear',
-        suggestion: answer,
+        suggestion: 'Could you please rephrase your question about Toronto\'s budget data?',
         confidence,
         examples: [
           "What was Toronto's total budget in 2024?",
@@ -99,14 +98,31 @@ Generate SQL to answer this and provide a clear response with specific data.`,
       }, { status: 500 });
     }
 
-    // Update the answer with actual results
-    const finalAnswer = queryResults.length > 0 
-      ? `${answer}\n\nBased on ${queryResults.length} records found.`
-      : "No data found matching your query. Try asking about a different time period or department.";
+    // Generate natural language answer using the actual query results
+    const answerGenerationPrompt = `You are a Toronto budget data analyst. The user asked: "${question}"
+
+The SQL query was: ${sql}
+
+The query returned ${queryResults.length} record(s) with the following data:
+${JSON.stringify(queryResults, null, 2)}
+
+Provide a clear, conversational answer that:
+1. Directly answers the user's question
+2. Uses the ACTUAL numbers from the query results
+3. Formats large numbers clearly (e.g., "$15.5 billion" instead of "$15475414089.78")
+4. Provides context when helpful
+5. Is concise but informative
+
+Important: Use the REAL numbers from the data, not placeholders!`;
+
+    const answerResult = await generateText({
+      model: openai('gpt-4o-mini'),
+      prompt: answerGenerationPrompt,
+    });
 
     return Response.json({
       success: true,
-      answer: finalAnswer,
+      answer: answerResult.text,
       data: queryResults,
       query: {
         sql,
