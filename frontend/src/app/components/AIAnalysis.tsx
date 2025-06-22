@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Bot, User, Loader2, Copy, Code, Database, Search, Brain, Zap } from 'lucide-react';
 
 interface BudgetRecord {
@@ -132,7 +132,7 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
   const [loadingStep, setLoadingStep] = useState(0);
   const initialQueryExecuted = useRef(false);
 
-  const advanceLoadingStep = () => {
+  const advanceLoadingStep = useCallback(() => {
     setLoadingStep(prev => {
       if (prev < LOADING_STEPS.length - 1) {
         setTimeout(() => advanceLoadingStep(), LOADING_STEPS[prev + 1]?.duration || 1000);
@@ -140,7 +140,7 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
       }
       return prev;
     });
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -312,8 +312,8 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
             role: 'assistant',
             content: `I encountered an error while analyzing your query. Please try again or rephrase your question.
 
-I can help you analyze Toronto's budget data with questions like:
-- "What was Toronto's total budget in 2024?"
+I can help you analyze Toronto&apos;s budget data with questions like:
+- "What was Toronto&apos;s total budget in 2024?"
 - "How much did Toronto spend on police services?"  
 - "Show me the trend in fire department spending over the years"
 - "What are the top 5 programs by spending?"
@@ -330,7 +330,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       
       submitInitialQuery();
     }
-  }, [query]);
+  }, [query, advanceLoadingStep]);
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
