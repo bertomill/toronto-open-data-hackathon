@@ -220,8 +220,8 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
         role: 'assistant',
         content: `I encountered an error while processing your question. Please try again or rephrase your question.
 
-I can help you analyze Toronto's budget data with questions like:
-- "What was Toronto's total budget in 2024?"
+I can help you analyze Toronto&apos;s budget data with questions like:
+- "What was Toronto&apos;s total budget in 2024?"
 - "How much did Toronto spend on police services?"
 - "Show me the trend in fire department spending over the years"
 - "What are the top 5 programs by spending?"
@@ -330,6 +330,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       
       submitInitialQuery();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, advanceLoadingStep]);
 
   return (
