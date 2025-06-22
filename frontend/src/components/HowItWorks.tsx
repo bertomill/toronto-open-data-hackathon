@@ -176,7 +176,7 @@ export default function HowItWorks() {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">How It Works</h1>
+        <h1 className="text-3xl font-bold text-black mb-2">How It Works</h1>
         <p className="text-gray-600">
           Understand the technical architecture behind DollarSense and how AI processes your budget queries
         </p>
@@ -213,7 +213,7 @@ export default function HowItWorks() {
         <div className="space-y-8">
           {/* Process Flow */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-xl font-semibold mb-6">Process Flow</h3>
+            <h3 className="text-xl font-semibold mb-6 text-black">Process Flow</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {architectureSteps.map((step, index) => {
                 const IconComponent = step.icon;
@@ -267,7 +267,7 @@ export default function HowItWorks() {
 
           {/* Key Technologies */}
           <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-xl font-semibold mb-6">Key Technologies</h3>
+            <h3 className="text-xl font-semibold mb-6 text-black">Key Technologies</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <Brain className="w-12 h-12 text-blue-600 mx-auto mb-3" />

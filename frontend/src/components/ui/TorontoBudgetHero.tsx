@@ -24,7 +24,7 @@ const AuroraBackground = ({
     <main>
       <div
         className={cn(
-          "relative flex flex-col h-[100vh] items-center justify-center bg-zinc-50 dark:bg-zinc-900 text-slate-950 transition-bg",
+          "relative flex flex-col min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-900 text-slate-950 transition-bg py-8",
           className
         )}
         {...props}
@@ -178,7 +178,7 @@ function ElegantShape({
 function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
   return (
     <AuroraBackground className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
-      <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
+      <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden py-16 px-4">
         {/* Pixelated Toronto Skyline Background */}
         <div 
           className="absolute inset-0 opacity-30 bg-cover bg-center bg-no-repeat"
@@ -230,14 +230,14 @@ function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
           />
         </div>
 
-        <div className="relative z-10 container mx-auto px-4 md:px-6">
-          <div className="max-w-4xl mx-auto text-center">
+        <div className="relative z-10 container mx-auto">
+          <div className="max-w-4xl mx-auto text-center space-y-6 md:space-y-8">
             {/* Logo and Badge */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.5 }}
-              className="flex items-center justify-center gap-3 mb-8 md:mb-12"
+              className="flex items-center justify-center gap-3"
             >
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/[0.1] backdrop-blur-sm">
                 <DollarSign className="h-5 w-5 text-emerald-400" />
@@ -252,20 +252,21 @@ function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.7 }}
+              className="space-y-2 md:space-y-4"
             >
               <BlurText
                 text="Explore Toronto's Budget"
                 delay={100}
                 animateBy="words"
                 direction="top"
-                className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-4 md:mb-6 tracking-tight text-white"
+                className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-tight"
               />
               <BlurText
                 text="Data Like Never Before"
                 delay={150}
                 animateBy="words"
                 direction="top"
-                className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold mb-6 md:mb-8 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 via-blue-300 to-indigo-300"
+                className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 via-blue-300 to-indigo-300 leading-tight"
               />
             </motion.div>
 
@@ -275,7 +276,7 @@ function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 0.9 }}
             >
-              <p className="text-lg sm:text-xl md:text-2xl text-white/70 mb-8 md:mb-12 leading-relaxed font-light tracking-wide max-w-3xl mx-auto px-4">
+              <p className="text-base sm:text-lg md:text-xl text-white/70 leading-relaxed font-light tracking-wide max-w-3xl mx-auto">
                 Discover how Toronto spends your tax dollars with interactive visualizations, 
                 detailed breakdowns, and insights that make municipal budgets accessible to everyone.
               </p>
@@ -286,7 +287,7 @@ function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 1.1 }}
-              className="flex flex-wrap justify-center gap-6 md:gap-8 mb-8"
+              className="flex flex-wrap justify-center gap-4 md:gap-6"
             >
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/[0.1] backdrop-blur-sm">
                 <MapPin className="h-4 w-4 text-blue-400" />
