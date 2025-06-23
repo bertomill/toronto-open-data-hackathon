@@ -120,7 +120,7 @@ export default function DataViewer({ data }: DataViewerProps) {
                 setSearchTerm(e.target.value);
                 setCurrentPage(1);
               }}
-              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
             />
           </div>
 
@@ -131,7 +131,7 @@ export default function DataViewer({ data }: DataViewerProps) {
               setSelectedYear(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
           >
             {years.map(year => (
               <option key={year} value={year}>{year}</option>
@@ -145,7 +145,7 @@ export default function DataViewer({ data }: DataViewerProps) {
               setSelectedProgram(e.target.value);
               setCurrentPage(1);
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
           >
             {programs.map(program => (
               <option key={program} value={program}>
@@ -161,7 +161,7 @@ export default function DataViewer({ data }: DataViewerProps) {
               setPageSize(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black"
           >
             <option value={25}>25 per page</option>
             <option value={50}>50 per page</option>
