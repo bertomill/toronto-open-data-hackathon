@@ -66,11 +66,16 @@ export default function DataDispensations({ data }: DataDispensationsProps) {
     let totalExpenses = 0;
 
     yearData.forEach(row => {
-      const amount = parseFloat(row.Amount?.replace(/,/g, '') || '0');
-      if (amount > 0) {
-        totalExpenses += amount;
+      const amountStr = row.Amount
+      .replace(/[$,]/g, '')  // Remove $ and commas
+      .replace(/\((.*)\)/, '-$1'); // Convert (100) to -100
+    
+    const amount = parseFloat(amountStr) || 0;
+      
+      if (row['Expense/Revenue'] === 'Revenues') {
+        totalRevenue += Math.abs(amount); // Revenue can be positive or negative
       } else {
-        totalRevenue += Math.abs(amount);
+        totalExpenses += Math.abs(amount); // Expenses are always positive
       }
     });
 
@@ -95,6 +100,8 @@ export default function DataDispensations({ data }: DataDispensationsProps) {
       .slice(0, 8);
   }, [yearData]);
 
+  console.log( formatCurrency(revenueVsExpenses.totalExpenses))
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
@@ -108,7 +115,7 @@ export default function DataDispensations({ data }: DataDispensationsProps) {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             >
               {years.map(year => (
                 <option key={year} value={year}>{year}</option>

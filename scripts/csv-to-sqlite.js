@@ -60,8 +60,15 @@ const insertMany = db.transaction((records) => {
       // Parse amount - handle commas and negative values
       let amount = 0;
       if (record.Amount && record.Amount.trim()) {
-        const cleanAmount = record.Amount.replace(/,/g, '');
+        const isNegative = record.Amount.startsWith('(') && record.Amount.endsWith(')');
+        const cleanAmount = record.Amount
+          .replace(/[$,()]/g, '') // Remove $, commas AND parentheses
+          .trim();
+        
         amount = parseFloat(cleanAmount) || 0;
+        if (isNegative) {
+          amount = -Math.abs(amount); // Ensure negative value
+        }
       }
 
       insert.run(
@@ -154,8 +161,8 @@ const sampleQueries = [
   },
   {
     question: "How much revenue did Toronto collect from taxes in 2023?",
-    sql: "SELECT SUM(ABS(amount)) as tax_revenue FROM budget_data WHERE year = 2023 AND amount < 0 AND (program LIKE '%Tax%' OR service LIKE '%Tax%')",
-    description: "Calculate tax revenue (negative amounts represent income)"
+    sql: "SELECT SUM(ABS(amount)) as total_revenue FROM budget_data WHERE year = 2023 AND amount < 0",
+    description: "Calculate total revenue (negative amounts represent income)"
   }
 ];
 
