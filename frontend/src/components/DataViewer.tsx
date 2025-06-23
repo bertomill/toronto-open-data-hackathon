@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { Search, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useMemo } from "react";
+import { Search, Download, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BudgetData {
   Program: string;
   Service: string;
   Activity: string;
-  'Expense/Revenue': string;
-  'Category Name': string;
-  'Sub-Category Name': string;
-  'Commitment item': string;
+  "Expense/Revenue": string;
+  "Category Name": string;
+  "Sub-Category Name": string;
+  "Commitment item": string;
   Amount: string;
   Year: string;
   [key: string]: string;
@@ -21,45 +21,48 @@ interface DataViewerProps {
 }
 
 export default function DataViewer({ data }: DataViewerProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedYear, setSelectedYear] = useState('All');
-  const [selectedProgram, setSelectedProgram] = useState('All');
-  const [selectedType, setSelectedType] = useState('All');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedYear, setSelectedYear] = useState("All");
+  const [selectedProgram, setSelectedProgram] = useState("All");
+  const [selectedType, setSelectedType] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
 
   const years = useMemo(() => {
-    const uniqueYears = [...new Set(data.map(d => d.Year))].sort().reverse();
-    return ['All', ...uniqueYears];
+    const uniqueYears = [...new Set(data.map((d) => d.Year))].sort().reverse();
+    return ["All", ...uniqueYears];
   }, [data]);
 
   const programs = useMemo(() => {
-    const uniquePrograms = [...new Set(data.map(d => d.Program))].sort();
-    return ['All', ...uniquePrograms.slice(0, 20)]; // Limit to first 20 for performance
+    const uniquePrograms = [...new Set(data.map((d) => d.Program))].sort();
+    return ["All", ...uniquePrograms.slice(0, 20)]; // Limit to first 20 for performance
   }, [data]);
 
   const types = useMemo(() => {
-    return ['All', 'Expense', 'Revenue'];
+    return ["All", "Expense", "Revenue"];
   }, []);
 
   const filteredData = useMemo(() => {
-    return data.filter(row => {
-      const matchesSearch = searchTerm === '' || 
-        Object.values(row).some(value => 
+    return data.filter((row) => {
+      const matchesSearch =
+        searchTerm === "" ||
+        Object.values(row).some((value) =>
           value?.toLowerCase().includes(searchTerm.toLowerCase())
         );
-      
-      const matchesYear = selectedYear === 'All' || row.Year === selectedYear;
-      const matchesProgram = selectedProgram === 'All' || row.Program === selectedProgram;
-      
-      const amount = parseFloat(row.Amount?.replace(/,/g, '') || '0');
-      const isRevenue = row['Expense/Revenue'] === 'Revenues' || amount < 0;
-      const isExpense = row['Expense/Revenue'] === 'Expenses' || amount >= 0;
-      
-      const matchesType = selectedType === 'All' || 
-        (selectedType === 'Expense' && isExpense) || 
-        (selectedType === 'Revenue' && isRevenue);
-      
+
+      const matchesYear = selectedYear === "All" || row.Year === selectedYear;
+      const matchesProgram =
+        selectedProgram === "All" || row.Program === selectedProgram;
+
+      const amount = parseFloat(row.Amount?.replace(/,/g, "") || "0");
+      const isRevenue = row["Expense/Revenue"] === "Revenues" || amount < 0;
+      const isExpense = row["Expense/Revenue"] === "Expenses" || amount >= 0;
+
+      const matchesType =
+        selectedType === "All" ||
+        (selectedType === "Expense" && isExpense) ||
+        (selectedType === "Revenue" && isRevenue);
+
       return matchesSearch && matchesYear && matchesProgram && matchesType;
     });
   }, [data, searchTerm, selectedYear, selectedProgram, selectedType]);
@@ -72,9 +75,9 @@ export default function DataViewer({ data }: DataViewerProps) {
   const totalPages = Math.ceil(filteredData.length / pageSize);
 
   const formatCurrency = (value: string) => {
-    const num = parseFloat(value?.replace(/,/g, '') || '0');
-    if (num === 0) return '$0';
-    
+    const num = parseFloat(value?.replace(/,/g, "") || "0");
+    if (num === 0) return "$0";
+
     if (Math.abs(num) >= 1e6) {
       return `$${(num / 1e6).toFixed(1)}M`;
     } else if (Math.abs(num) >= 1e3) {
@@ -86,15 +89,17 @@ export default function DataViewer({ data }: DataViewerProps) {
   const exportData = () => {
     const csvContent = [
       Object.keys(filteredData[0] || {}),
-      ...filteredData.map(row => Object.values(row))
-    ].map(row => row.map(field => `"${field}"`).join(',')).join('\n');
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+      ...filteredData.map((row) => Object.values(row)),
+    ]
+      .map((row) => row.map((field) => `"${field}"`).join(","))
+      .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.setAttribute('hidden', '');
-    a.setAttribute('href', url);
-    a.setAttribute('download', 'toronto_budget_data.csv');
+    const a = document.createElement("a");
+    a.setAttribute("hidden", "");
+    a.setAttribute("href", url);
+    a.setAttribute("download", "toronto_budget_data.csv");
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -106,8 +111,12 @@ export default function DataViewer({ data }: DataViewerProps) {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Data Viewer</h1>
-            <p className="text-gray-600">Browse and explore Toronto&apos;s raw budget data</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Data Viewer
+            </h1>
+            <p className="text-gray-600">
+              Browse and explore Toronto&apos;s raw budget data
+            </p>
           </div>
           <button
             onClick={exportData}
@@ -146,8 +155,10 @@ export default function DataViewer({ data }: DataViewerProps) {
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
           >
-            {years.map(year => (
-              <option key={year} value={year}>{year}</option>
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
             ))}
           </select>
 
@@ -160,9 +171,9 @@ export default function DataViewer({ data }: DataViewerProps) {
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
           >
-            {programs.map(program => (
+            {programs.map((program) => (
               <option key={program} value={program}>
-                {program === 'All' ? 'All Programs' : program}
+                {program === "All" ? "All Programs" : program}
               </option>
             ))}
           </select>
@@ -176,9 +187,9 @@ export default function DataViewer({ data }: DataViewerProps) {
             }}
             className="px-4 py-2 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
           >
-            {types.map(type => (
+            {types.map((type) => (
               <option key={type} value={type}>
-                {type === 'All' ? 'All Types' : type}
+                {type === "All" ? "All Types" : type}
               </option>
             ))}
           </select>
@@ -202,9 +213,11 @@ export default function DataViewer({ data }: DataViewerProps) {
       {/* Results Info */}
       <div className="flex items-center justify-between mb-4">
         <div className="text-sm text-gray-600">
-          Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredData.length)} of {filteredData.length.toLocaleString()} results
+          Showing {(currentPage - 1) * pageSize + 1} to{" "}
+          {Math.min(currentPage * pageSize, filteredData.length)} of{" "}
+          {filteredData.length.toLocaleString()} results
         </div>
-        
+
         {/* Pagination */}
         <div className="flex items-center space-x-2">
           <button
@@ -212,19 +225,21 @@ export default function DataViewer({ data }: DataViewerProps) {
             disabled={currentPage === 1}
             className="p-2 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4 text-gray-600" />
           </button>
-          
-          <span className="px-3 py-1 text-sm">
+
+          <span className="px-3 py-1 text-sm text-gray-600">
             Page {currentPage} of {totalPages}
           </span>
-          
+
           <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            onClick={() =>
+              setCurrentPage(Math.min(totalPages, currentPage + 1))
+            }
             disabled={currentPage === totalPages}
             className="p-2 rounded border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4 text-gray-600" />
           </button>
         </div>
       </div>
@@ -235,47 +250,84 @@ export default function DataViewer({ data }: DataViewerProps) {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commitment</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Year
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Program
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Service
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Amount
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Commitment
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedData.map((row, index) => {
-                const amount = parseFloat(row.Amount?.replace(/,/g, '') || '0');
-                const isRevenue = row['Expense/Revenue'] === 'Revenues' || amount < 0;
-                const type = isRevenue ? 'Revenue' : 'Expense';
-                
+                const amount = parseFloat(row.Amount?.replace(/,/g, "") || "0");
+                const isRevenue =
+                  row["Expense/Revenue"] === "Revenues" || amount < 0;
+                const type = isRevenue ? "Revenue" : "Expense";
+
                 return (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">{row.Year}</td>
-                    <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title={row.Program}>
+                    <td className="px-4 py-3 text-sm text-gray-900">
+                      {row.Year}
+                    </td>
+                    <td
+                      className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate"
+                      title={row.Program}
+                    >
                       {row.Program}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title={row.Service}>
+                    <td
+                      className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate"
+                      title={row.Service}
+                    >
                       {row.Service}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title={row['Category Name']}>
-                      {row['Category Name']}
+                    <td
+                      className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate"
+                      title={row["Category Name"]}
+                    >
+                      {row["Category Name"]}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium">
-                      <span className={isRevenue ? 'text-green-600' : 'text-red-600'}>
+                      <span
+                        className={
+                          isRevenue ? "text-green-600" : "text-red-600"
+                        }
+                      >
                         {formatCurrency(row.Amount)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900">
-                      <span className={`px-2 py-1 text-xs rounded-full ${
-                        isRevenue ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${
+                          isRevenue
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
                         {type}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title={row['Commitment item']}>
-                      {row['Commitment item']}
+                    <td
+                      className="px-4 py-3 text-sm text-gray-900 max-w-xs truncate"
+                      title={row["Commitment item"]}
+                    >
+                      {row["Commitment item"]}
                     </td>
                   </tr>
                 );
@@ -291,21 +343,25 @@ export default function DataViewer({ data }: DataViewerProps) {
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            className="flex items-center space-x-1 px-4 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 text-gray-600"
           >
-            Previous
+            <ChevronLeft className="h-4 w-4" />
+            <span>Previous</span>
           </button>
-          
+
           <span className="px-4 py-2 text-sm text-gray-600">
             Page {currentPage} of {totalPages}
           </span>
-          
+
           <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+            onClick={() =>
+              setCurrentPage(Math.min(totalPages, currentPage + 1))
+            }
             disabled={currentPage === totalPages}
-            className="px-4 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            className="flex items-center space-x-1 px-4 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 text-gray-600"
           >
-            Next
+            <span>Next</span>
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
       </div>
