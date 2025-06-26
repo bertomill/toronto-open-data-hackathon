@@ -9,28 +9,35 @@ import {
   QUERY_EXAMPLES 
 } from '@/lib/database';
 
+// Use Node.js runtime for database access
 export const runtime = 'nodejs';
 
-// Schema for SQL generation only
+// Define schema for validating SQL query generation output
 const SQLGenerationSchema = z.object({
+  // The actual SQL query string to be executed
   sql: z.string().describe('The SQL query to execute'),
+  // Type of analysis being performed
   queryType: z.enum(['summary', 'trend', 'comparison', 'ranking', 'specific']).describe('Type of query being performed'),
+  // Confidence score for the generated SQL
   confidence: z.number().min(0).max(1).describe('Confidence level in the generated SQL (0-1)')
 });
 
 export async function POST(req: Request) {
   try {
+    // Extract question from request body
     const { question } = await req.json();
 
+    // Validate question input
     if (!question || typeof question !== 'string') {
       return Response.json({ error: 'Question is required' }, { status: 400 });
     }
 
-    // Get database context
+    // Get context and statistics from SQLite database used for budget queries
     const stats = getDatabaseStats();
-    const programs = getPrograms().slice(0, 20);
+    const programs = getPrograms().slice(0, 20); // Get sample of programs
 
-    // First, generate just the SQL query
+    // Construct prompt for SQL generation
+    // This includes database schema, examples, and rules
     const sqlGenerationPrompt = `You are a Toronto budget data analyst. Generate a SQL query to answer the user's question.
 
 ${DATABASE_SCHEMA}
@@ -56,6 +63,7 @@ RULES:
 
 Generate ONLY the SQL query to answer this question.`;
 
+    // Generate SQL query using AI model
     const sqlResult = await generateObject({
       model: openai('gpt-4o-mini'),
       system: sqlGenerationPrompt,
@@ -67,7 +75,7 @@ Generate the appropriate SQL query to answer this question.`,
 
     const { sql, queryType, confidence } = sqlResult.object;
 
-    // Lower confidence threshold for better reliability
+    // Handle low confidence responses with helpful suggestions
     if (confidence < 0.5) {
       return Response.json({
         success: false,
@@ -84,7 +92,7 @@ Generate the appropriate SQL query to answer this question.`,
       });
     }
 
-    // Execute the SQL query
+    // Execute the generated SQL query safely
     let queryResults;
     try {
       queryResults = executeQuery(sql);
@@ -98,7 +106,8 @@ Generate the appropriate SQL query to answer this question.`,
       }, { status: 500 });
     }
 
-    // Generate natural language answer using the actual query results
+    // Generate natural language response from query results
+    // This prompt ensures clear, accurate answers based on actual data
     const answerGenerationPrompt = `You are a Toronto budget data analyst. The user asked: "${question}"
 
 The SQL query was: ${sql}
@@ -112,14 +121,30 @@ Provide a clear, conversational answer that:
 3. Formats large numbers clearly (e.g., "$15.5 billion" instead of "$15475414089.78")
 4. Provides context when helpful
 5. Is concise but informative
+6. INCLUDES A "EVIDENCE" SECTION showing the SQL query and key data points
+
+Format your response like this:
+[Main answer paragraph]
+
+**📊 Evidence:**
+\`\`\`sql
+${sql}
+\`\`\`
+
+**📋 Data Summary:**
+- [Key data points from results]
+- [Total records found: ${queryResults.length}]
+- [Any notable patterns or insights]
 
 Important: Use the REAL numbers from the data, not placeholders!`;
 
+    // Generate human-friendly answer from the results
     const answerResult = await generateText({
       model: openai('gpt-4o-mini'),
       prompt: answerGenerationPrompt,
     });
 
+    // Return successful response with all relevant data
     return Response.json({
       success: true,
       answer: answerResult.text,
@@ -131,11 +156,16 @@ Important: Use the REAL numbers from the data, not placeholders!`;
       },
       metadata: {
         totalRows: queryResults.length,
-        executionTime: Date.now()
+        executionTime: Date.now(),
+        dataSource: "City of Toronto Open Data - Budget & Financial Data",
+        dataRange: `${stats.minYear}-${stats.maxYear}`,
+        lastUpdated: "2024-12-01", // You can make this dynamic
+        totalRecords: stats.totalRecords
       }
     });
 
   } catch (error) {
+    // Handle any unexpected errors
     console.error('Query API error:', error);
     return Response.json({
       success: false,

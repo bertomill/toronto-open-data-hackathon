@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Bot, User, Loader2, Copy, Code, Database, Search, Brain, Zap } from 'lucide-react';
+import { Send, Bot, User, Loader2, Copy, Code, Database, Search, Brain, Zap, ChevronDown, ChevronUp, Eye, Table } from 'lucide-react';
 
 interface BudgetRecord {
   [key: string]: string | number;
@@ -10,6 +10,18 @@ interface BudgetRecord {
 interface AIAnalysisProps {
   data: BudgetRecord[];
   query: string;
+}
+
+interface QueryEvidence {
+  sql: string;
+  data: any[];
+  confidence: number;
+  queryType: string;
+  totalRows: number;
+  dataSource?: string;
+  dataRange?: string;
+  lastUpdated?: string;
+  totalRecords?: number;
 }
 
 // Loading steps with icons and messages
@@ -52,7 +64,7 @@ function CodeBlock({ code, language = 'sql' }: { code: string; language?: string
   );
 }
 
-// Function to render message content with code block detection
+// Function to render message content with code block detection and bold text
 function MessageContent({ content }: { content: string }) {
   const parts = content.split(/```(\w+)?\n([\s\S]*?)\n```/);
   
@@ -60,12 +72,29 @@ function MessageContent({ content }: { content: string }) {
     <div>
       {parts.map((part, index) => {
         if (index % 3 === 0) {
-          // Regular text
-          return part ? (
+          // Regular text - process bold markdown
+          if (!part) return null;
+          
+          // Split by bold patterns and render
+          const boldParts = part.split(/(\*\*[^*]+\*\*)/);
+          
+          return (
             <div key={index} className="whitespace-pre-wrap">
-              {part}
+              {boldParts.map((boldPart, boldIndex) => {
+                if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
+                  // Bold text
+                  return (
+                    <strong key={boldIndex} className="font-semibold">
+                      {boldPart.slice(2, -2)}
+                    </strong>
+                  );
+                } else {
+                  // Regular text
+                  return boldPart;
+                }
+              })}
             </div>
-          ) : null;
+          );
         } else if (index % 3 === 2) {
           // Code block content
           const language = parts[index - 1] || 'sql';
@@ -120,8 +149,192 @@ function LoadingSteps({ currentStep }: { currentStep: number }) {
   );
 }
 
+// Component to render evidence section
+function EvidenceSection({ evidence }: { evidence: QueryEvidence }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [copiedSql, setCopiedSql] = useState(false);
+  const [copiedData, setCopiedData] = useState(false);
+  const [dataViewMode, setDataViewMode] = useState<'table' | 'json'>('table');
+
+  const copyToClipboard = async (text: string, type: 'sql' | 'data') => {
+    await navigator.clipboard.writeText(text);
+    if (type === 'sql') {
+      setCopiedSql(true);
+      setTimeout(() => setCopiedSql(false), 2000);
+    } else {
+      setCopiedData(true);
+      setTimeout(() => setCopiedData(false), 2000);
+    }
+  };
+
+  return (
+    <div className="mt-4 border-t border-gray-200 pt-4">
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center space-x-2 text-sm text-gray-600 hover:text-blue-600 transition-colors"
+      >
+        <Eye className="w-4 h-4" />
+        <span>Show Evidence</span>
+        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+      </button>
+      
+      {isExpanded && (
+        <div className="mt-4 space-y-4">
+          {/* SQL Query */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <Code className="w-4 h-4 text-green-500" />
+                <span className="text-sm font-medium text-gray-700">Generated SQL Query</span>
+                <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                  Confidence: {Math.round(evidence.confidence * 100)}%
+                </span>
+              </div>
+              <button
+                onClick={() => copyToClipboard(evidence.sql, 'sql')}
+                className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <Copy className="w-3 h-3" />
+                <span>{copiedSql ? 'Copied!' : 'Copy'}</span>
+              </button>
+            </div>
+            <pre className="text-xs bg-gray-900 text-green-300 p-3 rounded-lg overflow-x-auto">
+              <code>{evidence.sql}</code>
+            </pre>
+          </div>
+
+          {/* Data Display */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center space-x-2">
+                <Database className="w-4 h-4 text-blue-500" />
+                <span className="text-sm font-medium text-gray-700">
+                  Query Results ({evidence.totalRows} records)
+                </span>
+                <div className="flex bg-gray-100 rounded text-xs overflow-hidden">
+                  <button
+                    onClick={() => setDataViewMode('table')}
+                    className={`px-2 py-1 flex items-center space-x-1 transition-colors ${
+                      dataViewMode === 'table' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    <Table className="w-3 h-3" />
+                    <span>Table</span>
+                  </button>
+                  <button
+                    onClick={() => setDataViewMode('json')}
+                    className={`px-2 py-1 flex items-center space-x-1 transition-colors ${
+                      dataViewMode === 'json' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    <Code className="w-3 h-3" />
+                    <span>JSON</span>
+                  </button>
+                </div>
+              </div>
+              <button
+                onClick={() => copyToClipboard(JSON.stringify(evidence.data, null, 2), 'data')}
+                className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <Copy className="w-3 h-3" />
+                <span>{copiedData ? 'Copied!' : 'Copy JSON'}</span>
+              </button>
+            </div>
+            
+            <div className="bg-gray-50 p-3 rounded-lg max-h-60 overflow-auto">
+              {dataViewMode === 'table' ? (
+                <DataTable data={evidence.data} maxRows={20} />
+              ) : (
+                <pre className="text-xs text-gray-700">
+                  <code>{JSON.stringify(evidence.data.slice(0, 5), null, 2)}
+                  {evidence.data.length > 5 && `\n... and ${evidence.data.length - 5} more records`}</code>
+                </pre>
+              )}
+            </div>
+          </div>
+
+          {/* Query Metadata */}
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <div className="text-xs text-blue-800 space-y-1">
+              <div><strong>Query Type:</strong> {evidence.queryType}</div>
+              <div><strong>Total Records:</strong> {evidence.totalRows.toLocaleString()}</div>
+              <div><strong>Confidence Score:</strong> {Math.round(evidence.confidence * 100)}%</div>
+              {evidence.dataSource && (
+                <div><strong>Data Source:</strong> {evidence.dataSource}</div>
+              )}
+              {evidence.dataRange && (
+                <div><strong>Data Period:</strong> {evidence.dataRange}</div>
+              )}
+              {evidence.totalRecords && (
+                <div><strong>Dataset Size:</strong> {evidence.totalRecords.toLocaleString()} total records</div>
+              )}
+              {evidence.lastUpdated && (
+                <div><strong>Last Updated:</strong> {evidence.lastUpdated}</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Component to render data in table format
+function DataTable({ data, maxRows = 10 }: { data: any[]; maxRows?: number }) {
+  if (!data || data.length === 0) {
+    return <div className="text-gray-500 text-sm">No data to display</div>;
+  }
+
+  const columns = Object.keys(data[0]);
+  const displayData = data.slice(0, maxRows);
+  
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-xs">
+        <thead>
+          <tr className="bg-gray-100">
+            {columns.map((column) => (
+              <th key={column} className="px-2 py-1 text-left font-medium text-gray-700 border-b">
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {displayData.map((row, index) => (
+            <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+              {columns.map((column) => (
+                <td key={column} className="px-2 py-1 text-gray-600 border-b">
+                  {typeof row[column] === 'number' 
+                    ? row[column].toLocaleString() 
+                    : String(row[column] || '')
+                  }
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {data.length > maxRows && (
+        <div className="text-xs text-gray-500 mt-2 text-center">
+          Showing {maxRows} of {data.length.toLocaleString()} rows
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AIAnalysis({ query }: AIAnalysisProps) {
-  const [messages, setMessages] = useState<Array<{id: string, role: string, content: string}>>(() => {
+  const [messages, setMessages] = useState<Array<{
+    id: string, 
+    role: string, 
+    content: string,
+    evidence?: QueryEvidence
+  }>>(() => {
     if (query) {
       return [{ id: '1', role: 'user', content: query }];
     }
@@ -156,6 +369,37 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
     setTimeout(() => advanceLoadingStep(), LOADING_STEPS[0].duration);
 
     try {
+      // First try the query API directly to get evidence
+      let queryEvidence: QueryEvidence | null = null;
+      try {
+        const queryResponse = await fetch('/api/query', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ question: input.trim() }),
+        });
+
+        if (queryResponse.ok) {
+          const queryData = await queryResponse.json();
+          if (queryData.success) {
+            queryEvidence = {
+              sql: queryData.query.sql,
+              data: queryData.data,
+              confidence: queryData.query.confidence,
+              queryType: queryData.query.type,
+              totalRows: queryData.metadata.totalRows,
+              dataSource: queryData.metadata.dataSource,
+              dataRange: queryData.metadata.dataRange,
+              lastUpdated: queryData.metadata.lastUpdated,
+              totalRecords: queryData.metadata.totalRecords
+            };
+          }
+        }
+      } catch (error) {
+        console.warn('Direct query failed:', error);
+      }
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -183,7 +427,8 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
       const assistantMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: ''
+        content: '',
+        evidence: queryEvidence || undefined
       };
 
       setMessages(prev => [...prev, assistantMessage]);
@@ -251,6 +496,38 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         
         try {
           const userMessage = messages[0];
+          
+          // First try the query API directly to get evidence
+          let queryEvidence: QueryEvidence | null = null;
+          try {
+            const queryResponse = await fetch('/api/query', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ question: userMessage.content }),
+            });
+
+            if (queryResponse.ok) {
+              const queryData = await queryResponse.json();
+              if (queryData.success) {
+                queryEvidence = {
+                  sql: queryData.query.sql,
+                  data: queryData.data,
+                  confidence: queryData.query.confidence,
+                  queryType: queryData.query.type,
+                  totalRows: queryData.metadata.totalRows,
+                  dataSource: queryData.metadata.dataSource,
+                  dataRange: queryData.metadata.dataRange,
+                  lastUpdated: queryData.metadata.lastUpdated,
+                  totalRecords: queryData.metadata.totalRecords
+                };
+              }
+            }
+          } catch (error) {
+            console.warn('Direct query failed:', error);
+          }
+          
           const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {
@@ -275,7 +552,8 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
           const assistantMessage = {
             id: (Date.now() + 1).toString(),
             role: 'assistant',
-            content: ''
+            content: '',
+            evidence: queryEvidence || undefined
           };
 
           setMessages(prev => [...prev, assistantMessage]);
@@ -374,6 +652,9 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
               }`}
             >
               <MessageContent content={message.content} />
+              {message.role === 'assistant' && message.evidence && (
+                <EvidenceSection evidence={message.evidence} />
+              )}
             </div>
 
             {message.role === 'user' && (
