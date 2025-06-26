@@ -3,7 +3,7 @@ import Papa from 'papaparse';
 import fs from 'fs';
 import path from 'path';
 
-const CSV_PATH = '../toronto_budget_combined_2024_to_2019.csv';
+const CSV_PATH = '../toronto_budget_combined_2024_to_2019-v2.csv';
 const DB_PATH = '../frontend/public/data/toronto_budget.db';
 
 console.log('🚀 Converting CSV to SQLite database...');
@@ -17,8 +17,21 @@ const { data } = Papa.parse(csvContent, {
 
 console.log(`📊 Parsed ${data.length} rows from CSV`);
 
+// Filter out rows with blank/invalid years
+const validData = data.filter(record => {
+  const year = parseInt(record.Year);
+  return year && year >= 2019 && year <= 2024;
+});
+
+console.log(`✅ Filtered to ${validData.length} rows with valid years (removed ${data.length - validData.length} invalid rows)`);
+
 // Create database
 const db = new Database(DB_PATH);
+
+// Drop existing table to ensure clean rebuild
+db.exec('DROP TABLE IF EXISTS budget_data');
+db.exec('DROP TABLE IF EXISTS metadata');
+db.exec('DROP TABLE IF EXISTS sample_queries');
 
 // Create table with proper schema
 db.exec(`
@@ -80,7 +93,7 @@ const insertMany = db.transaction((records) => {
   }
 });
 
-insertMany(data);
+insertMany(validData);
 
 // Add metadata table
 db.exec(`
@@ -94,7 +107,7 @@ db.exec(`
 // Insert metadata
 const insertMeta = db.prepare('INSERT OR REPLACE INTO metadata (key, value) VALUES (?, ?)');
 insertMeta.run('total_records', insertedCount.toString());
-insertMeta.run('data_source', 'toronto_budget_combined_2024_to_2019.csv');
+insertMeta.run('data_source', 'toronto_budget_combined_2024_to_2019-v2.csv');
 insertMeta.run('years_covered', '2019-2024');
 insertMeta.run('last_updated', new Date().toISOString());
 
