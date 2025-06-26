@@ -1,7 +1,22 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Bot, User, Loader2, Copy, Code, Database, Search, Brain, Zap, ChevronDown, ChevronUp, Eye, Table } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  Send,
+  Bot,
+  User,
+  Loader2,
+  Copy,
+  Code,
+  Database,
+  Search,
+  Brain,
+  Zap,
+  ChevronDown,
+  ChevronUp,
+  Eye,
+  Table,
+} from "lucide-react";
 
 interface BudgetRecord {
   [key: string]: string | number;
@@ -14,7 +29,7 @@ interface AIAnalysisProps {
 
 interface QueryEvidence {
   sql: string;
-  data: any[];
+  data: BudgetRecord[];
   confidence: number;
   queryType: string;
   totalRows: number;
@@ -29,11 +44,17 @@ const LOADING_STEPS = [
   { icon: Search, message: "Analyzing your question...", duration: 1000 },
   { icon: Database, message: "Searching budget database...", duration: 1500 },
   { icon: Brain, message: "Understanding data patterns...", duration: 1200 },
-  { icon: Zap, message: "Preparing response...", duration: 800 }
+  { icon: Zap, message: "Preparing response...", duration: 800 },
 ];
 
 // Component to render code blocks with copy functionality
-function CodeBlock({ code, language = 'sql' }: { code: string; language?: string }) {
+function CodeBlock({
+  code,
+  language = "sql",
+}: {
+  code: string;
+  language?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = async () => {
@@ -47,14 +68,16 @@ function CodeBlock({ code, language = 'sql' }: { code: string; language?: string
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <Code className="w-4 h-4 text-green-400" />
-          <span className="text-sm text-green-400 font-medium">{language.toUpperCase()} Query</span>
+          <span className="text-sm text-green-400 font-medium">
+            {language.toUpperCase()} Query
+          </span>
         </div>
         <button
           onClick={copyToClipboard}
           className="flex items-center space-x-1 text-gray-400 hover:text-white transition-colors text-sm"
         >
           <Copy className="w-4 h-4" />
-          <span>{copied ? 'Copied!' : 'Copy'}</span>
+          <span>{copied ? "Copied!" : "Copy"}</span>
         </button>
       </div>
       <pre className="text-green-300 text-sm overflow-x-auto">
@@ -67,21 +90,21 @@ function CodeBlock({ code, language = 'sql' }: { code: string; language?: string
 // Function to render message content with code block detection and bold text
 function MessageContent({ content }: { content: string }) {
   const parts = content.split(/```(\w+)?\n([\s\S]*?)\n```/);
-  
+
   return (
     <div>
       {parts.map((part, index) => {
         if (index % 3 === 0) {
           // Regular text - process bold markdown
           if (!part) return null;
-          
+
           // Split by bold patterns and render
           const boldParts = part.split(/(\*\*[^*]+\*\*)/);
-          
+
           return (
             <div key={index} className="whitespace-pre-wrap">
               {boldParts.map((boldPart, boldIndex) => {
-                if (boldPart.startsWith('**') && boldPart.endsWith('**')) {
+                if (boldPart.startsWith("**") && boldPart.endsWith("**")) {
                   // Bold text
                   return (
                     <strong key={boldIndex} className="font-semibold">
@@ -97,7 +120,7 @@ function MessageContent({ content }: { content: string }) {
           );
         } else if (index % 3 === 2) {
           // Code block content
-          const language = parts[index - 1] || 'sql';
+          const language = parts[index - 1] || "sql";
           return <CodeBlock key={index} code={part} language={language} />;
         }
         // Skip language indicators (index % 3 === 1)
@@ -119,14 +142,18 @@ function LoadingSteps({ currentStep }: { currentStep: number }) {
           const IconComponent = step.icon;
           const isActive = index === currentStep;
           const isCompleted = index < currentStep;
-          
+
           return (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className={`flex items-center space-x-2 transition-all duration-300 ${
-                index > 0 ? 'mt-2' : ''
+                index > 0 ? "mt-2" : ""
               } ${
-                isActive ? 'text-blue-600' : isCompleted ? 'text-green-600' : 'text-gray-400'
+                isActive
+                  ? "text-blue-600"
+                  : isCompleted
+                  ? "text-green-600"
+                  : "text-gray-400"
               }`}
             >
               {isActive ? (
@@ -138,7 +165,7 @@ function LoadingSteps({ currentStep }: { currentStep: number }) {
               ) : (
                 <IconComponent className="w-4 h-4" />
               )}
-              <span className={`text-sm ${isActive ? 'font-medium' : ''}`}>
+              <span className={`text-sm ${isActive ? "font-medium" : ""}`}>
                 {step.message}
               </span>
             </div>
@@ -154,11 +181,11 @@ function EvidenceSection({ evidence }: { evidence: QueryEvidence }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedData, setCopiedData] = useState(false);
-  const [dataViewMode, setDataViewMode] = useState<'table' | 'json'>('table');
+  const [dataViewMode, setDataViewMode] = useState<"table" | "json">("table");
 
-  const copyToClipboard = async (text: string, type: 'sql' | 'data') => {
+  const copyToClipboard = async (text: string, type: "sql" | "data") => {
     await navigator.clipboard.writeText(text);
-    if (type === 'sql') {
+    if (type === "sql") {
       setCopiedSql(true);
       setTimeout(() => setCopiedSql(false), 2000);
     } else {
@@ -175,9 +202,13 @@ function EvidenceSection({ evidence }: { evidence: QueryEvidence }) {
       >
         <Eye className="w-4 h-4" />
         <span>Show Evidence</span>
-        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        {isExpanded ? (
+          <ChevronUp className="w-4 h-4" />
+        ) : (
+          <ChevronDown className="w-4 h-4" />
+        )}
       </button>
-      
+
       {isExpanded && (
         <div className="mt-4 space-y-4">
           {/* SQL Query */}
@@ -185,17 +216,19 @@ function EvidenceSection({ evidence }: { evidence: QueryEvidence }) {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center space-x-2">
                 <Code className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-700">Generated SQL Query</span>
+                <span className="text-sm font-medium text-gray-700">
+                  Generated SQL Query
+                </span>
                 <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
                   Confidence: {Math.round(evidence.confidence * 100)}%
                 </span>
               </div>
               <button
-                onClick={() => copyToClipboard(evidence.sql, 'sql')}
+                onClick={() => copyToClipboard(evidence.sql, "sql")}
                 className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
               >
                 <Copy className="w-3 h-3" />
-                <span>{copiedSql ? 'Copied!' : 'Copy'}</span>
+                <span>{copiedSql ? "Copied!" : "Copy"}</span>
               </button>
             </div>
             <pre className="text-xs bg-gray-900 text-green-300 p-3 rounded-lg overflow-x-auto">
@@ -213,22 +246,22 @@ function EvidenceSection({ evidence }: { evidence: QueryEvidence }) {
                 </span>
                 <div className="flex bg-gray-100 rounded text-xs overflow-hidden">
                   <button
-                    onClick={() => setDataViewMode('table')}
+                    onClick={() => setDataViewMode("table")}
                     className={`px-2 py-1 flex items-center space-x-1 transition-colors ${
-                      dataViewMode === 'table' 
-                        ? 'bg-blue-500 text-white' 
-                        : 'text-gray-600 hover:text-gray-800'
+                      dataViewMode === "table"
+                        ? "bg-blue-500 text-white"
+                        : "text-gray-600 hover:text-gray-800"
                     }`}
                   >
                     <Table className="w-3 h-3" />
                     <span>Table</span>
                   </button>
                   <button
-                    onClick={() => setDataViewMode('json')}
+                    onClick={() => setDataViewMode("json")}
                     className={`px-2 py-1 flex items-center space-x-1 transition-colors ${
-                      dataViewMode === 'json' 
-                        ? 'bg-blue-500 text-white' 
-                        : 'text-gray-600 hover:text-gray-800'
+                      dataViewMode === "json"
+                        ? "bg-blue-500 text-white"
+                        : "text-gray-600 hover:text-gray-800"
                     }`}
                   >
                     <Code className="w-3 h-3" />
@@ -237,21 +270,29 @@ function EvidenceSection({ evidence }: { evidence: QueryEvidence }) {
                 </div>
               </div>
               <button
-                onClick={() => copyToClipboard(JSON.stringify(evidence.data, null, 2), 'data')}
+                onClick={() =>
+                  copyToClipboard(
+                    JSON.stringify(evidence.data, null, 2),
+                    "data"
+                  )
+                }
                 className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-700 transition-colors"
               >
                 <Copy className="w-3 h-3" />
-                <span>{copiedData ? 'Copied!' : 'Copy JSON'}</span>
+                <span>{copiedData ? "Copied!" : "Copy JSON"}</span>
               </button>
             </div>
-            
+
             <div className="bg-gray-50 p-3 rounded-lg max-h-60 overflow-auto">
-              {dataViewMode === 'table' ? (
+              {dataViewMode === "table" ? (
                 <DataTable data={evidence.data} maxRows={20} />
               ) : (
                 <pre className="text-xs text-gray-700">
-                  <code>{JSON.stringify(evidence.data.slice(0, 5), null, 2)}
-                  {evidence.data.length > 5 && `\n... and ${evidence.data.length - 5} more records`}</code>
+                  <code>
+                    {JSON.stringify(evidence.data.slice(0, 5), null, 2)}
+                    {evidence.data.length > 5 &&
+                      `\n... and ${evidence.data.length - 5} more records`}
+                  </code>
                 </pre>
               )}
             </div>
@@ -260,20 +301,37 @@ function EvidenceSection({ evidence }: { evidence: QueryEvidence }) {
           {/* Query Metadata */}
           <div className="bg-blue-50 p-3 rounded-lg">
             <div className="text-xs text-blue-800 space-y-1">
-              <div><strong>Query Type:</strong> {evidence.queryType}</div>
-              <div><strong>Total Records:</strong> {evidence.totalRows.toLocaleString()}</div>
-              <div><strong>Confidence Score:</strong> {Math.round(evidence.confidence * 100)}%</div>
+              <div>
+                <strong>Query Type:</strong> {evidence.queryType}
+              </div>
+              <div>
+                <strong>Total Records:</strong>{" "}
+                {evidence.totalRows.toLocaleString()}
+              </div>
+              <div>
+                <strong>Confidence Score:</strong>{" "}
+                {Math.round(evidence.confidence * 100)}%
+              </div>
               {evidence.dataSource && (
-                <div><strong>Data Source:</strong> {evidence.dataSource}</div>
+                <div>
+                  <strong>Data Source:</strong> {evidence.dataSource}
+                </div>
               )}
               {evidence.dataRange && (
-                <div><strong>Data Period:</strong> {evidence.dataRange}</div>
+                <div>
+                  <strong>Data Period:</strong> {evidence.dataRange}
+                </div>
               )}
               {evidence.totalRecords && (
-                <div><strong>Dataset Size:</strong> {evidence.totalRecords.toLocaleString()} total records</div>
+                <div>
+                  <strong>Dataset Size:</strong>{" "}
+                  {evidence.totalRecords.toLocaleString()} total records
+                </div>
               )}
               {evidence.lastUpdated && (
-                <div><strong>Last Updated:</strong> {evidence.lastUpdated}</div>
+                <div>
+                  <strong>Last Updated:</strong> {evidence.lastUpdated}
+                </div>
               )}
             </div>
           </div>
@@ -284,21 +342,30 @@ function EvidenceSection({ evidence }: { evidence: QueryEvidence }) {
 }
 
 // Component to render data in table format
-function DataTable({ data, maxRows = 10 }: { data: any[]; maxRows?: number }) {
+function DataTable({
+  data,
+  maxRows = 10,
+}: {
+  data: BudgetRecord[];
+  maxRows?: number;
+}) {
   if (!data || data.length === 0) {
     return <div className="text-gray-500 text-sm">No data to display</div>;
   }
 
   const columns = Object.keys(data[0]);
   const displayData = data.slice(0, maxRows);
-  
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-xs">
         <thead>
           <tr className="bg-gray-100">
             {columns.map((column) => (
-              <th key={column} className="px-2 py-1 text-left font-medium text-gray-700 border-b">
+              <th
+                key={column}
+                className="px-2 py-1 text-left font-medium text-gray-700 border-b"
+              >
                 {column}
               </th>
             ))}
@@ -306,13 +373,15 @@ function DataTable({ data, maxRows = 10 }: { data: any[]; maxRows?: number }) {
         </thead>
         <tbody>
           {displayData.map((row, index) => (
-            <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+            <tr
+              key={index}
+              className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}
+            >
               {columns.map((column) => (
                 <td key={column} className="px-2 py-1 text-gray-600 border-b">
-                  {typeof row[column] === 'number' 
-                    ? row[column].toLocaleString() 
-                    : String(row[column] || '')
-                  }
+                  {typeof row[column] === "number"
+                    ? row[column].toLocaleString()
+                    : String(row[column] || "")}
                 </td>
               ))}
             </tr>
@@ -329,26 +398,31 @@ function DataTable({ data, maxRows = 10 }: { data: any[]; maxRows?: number }) {
 }
 
 export default function AIAnalysis({ query }: AIAnalysisProps) {
-  const [messages, setMessages] = useState<Array<{
-    id: string, 
-    role: string, 
-    content: string,
-    evidence?: QueryEvidence
-  }>>(() => {
+  const [messages, setMessages] = useState<
+    Array<{
+      id: string;
+      role: string;
+      content: string;
+      evidence?: QueryEvidence;
+    }>
+  >(() => {
     if (query) {
-      return [{ id: '1', role: 'user', content: query }];
+      return [{ id: "1", role: "user", content: query }];
     }
     return [];
   });
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const initialQueryExecuted = useRef(false);
 
   const advanceLoadingStep = useCallback(() => {
-    setLoadingStep(prev => {
+    setLoadingStep((prev) => {
       if (prev < LOADING_STEPS.length - 1) {
-        setTimeout(() => advanceLoadingStep(), LOADING_STEPS[prev + 1]?.duration || 1000);
+        setTimeout(
+          () => advanceLoadingStep(),
+          LOADING_STEPS[prev + 1]?.duration || 1000
+        );
         return prev + 1;
       }
       return prev;
@@ -359,12 +433,16 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { id: Date.now().toString(), role: 'user', content: input.trim() };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    const userMessage = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input.trim(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
     setIsLoading(true);
     setLoadingStep(0);
-    
+
     // Start loading animation
     setTimeout(() => advanceLoadingStep(), LOADING_STEPS[0].duration);
 
@@ -372,10 +450,10 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
       // First try the query API directly to get evidence
       let queryEvidence: QueryEvidence | null = null;
       try {
-        const queryResponse = await fetch('/api/query', {
-          method: 'POST',
+        const queryResponse = await fetch("/api/query", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({ question: input.trim() }),
         });
@@ -392,24 +470,24 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
               dataSource: queryData.metadata.dataSource,
               dataRange: queryData.metadata.dataRange,
               lastUpdated: queryData.metadata.lastUpdated,
-              totalRecords: queryData.metadata.totalRecords
+              totalRecords: queryData.metadata.totalRecords,
             };
           }
         }
       } catch (error) {
-        console.warn('Direct query failed:', error);
+        console.warn("Direct query failed:", error);
       }
 
-      const response = await fetch('/api/chat', {
-        method: 'POST',
+      const response = await fetch("/api/chat", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          messages: [...messages, userMessage].map(msg => ({
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((msg) => ({
             role: msg.role,
-            content: msg.content
-          }))
+            content: msg.content,
+          })),
         }),
       });
 
@@ -420,49 +498,52 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
       // Handle streaming response
       const reader = response.body?.getReader();
       if (!reader) {
-        throw new Error('No response stream available');
+        throw new Error("No response stream available");
       }
 
-      let assistantContent = '';
+      let assistantContent = "";
       const assistantMessage = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: '',
-        evidence: queryEvidence || undefined
+        role: "assistant",
+        content: "",
+        evidence: queryEvidence || undefined,
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage]);
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
         const chunk = new TextDecoder().decode(value);
-        const lines = chunk.split('\n');
+        const lines = chunk.split("\n");
 
         for (const line of lines) {
           if (line.startsWith('0:"')) {
             // Extract the content from the streaming format
             const match = line.match(/^0:"(.*)"/);
             if (match) {
-              const content = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+              const content = match[1]
+                .replace(/\\n/g, "\n")
+                .replace(/\\"/g, '"');
               assistantContent = content; // Use the full content, not append
-              
-              setMessages(prev => prev.map(msg => 
-                msg.id === assistantMessage.id 
-                  ? { ...msg, content: assistantContent }
-                  : msg
-              ));
+
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === assistantMessage.id
+                    ? { ...msg, content: assistantContent }
+                    : msg
+                )
+              );
             }
           }
         }
       }
-
     } catch (error) {
-      console.error('Chat error:', error);
+      console.error("Chat error:", error);
       const errorMessage = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
+        role: "assistant",
         content: `I encountered an error while processing your question. Please try again or rephrase your question.
 
 I can help you analyze Toronto&apos;s budget data with questions like:
@@ -472,9 +553,9 @@ I can help you analyze Toronto&apos;s budget data with questions like:
 - "What are the top 5 programs by spending?"
 - "How much revenue did Toronto collect last year?"
 
-Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+Error: ${error instanceof Error ? error.message : "Unknown error"}`,
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
       setLoadingStep(0);
@@ -483,27 +564,32 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
 
   // Handle initial query
   useEffect(() => {
-    if (query && messages.length === 1 && messages[0].role === 'user' && !initialQueryExecuted.current) {
+    if (
+      query &&
+      messages.length === 1 &&
+      messages[0].role === "user" &&
+      !initialQueryExecuted.current
+    ) {
       initialQueryExecuted.current = true;
-      
+
       // Simulate form submission for initial query
       const submitInitialQuery = async () => {
         setIsLoading(true);
         setLoadingStep(0);
-        
+
         // Start loading animation
         setTimeout(() => advanceLoadingStep(), LOADING_STEPS[0].duration);
-        
+
         try {
           const userMessage = messages[0];
-          
+
           // First try the query API directly to get evidence
           let queryEvidence: QueryEvidence | null = null;
           try {
-            const queryResponse = await fetch('/api/query', {
-              method: 'POST',
+            const queryResponse = await fetch("/api/query", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({ question: userMessage.content }),
             });
@@ -520,21 +606,23 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
                   dataSource: queryData.metadata.dataSource,
                   dataRange: queryData.metadata.dataRange,
                   lastUpdated: queryData.metadata.lastUpdated,
-                  totalRecords: queryData.metadata.totalRecords
+                  totalRecords: queryData.metadata.totalRecords,
                 };
               }
             }
           } catch (error) {
-            console.warn('Direct query failed:', error);
+            console.warn("Direct query failed:", error);
           }
-          
-          const response = await fetch('/api/chat', {
-            method: 'POST',
+
+          const response = await fetch("/api/chat", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-            body: JSON.stringify({ 
-              messages: [{ role: userMessage.role, content: userMessage.content }]
+            body: JSON.stringify({
+              messages: [
+                { role: userMessage.role, content: userMessage.content },
+              ],
             }),
           });
 
@@ -545,49 +633,52 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
           // Handle streaming response
           const reader = response.body?.getReader();
           if (!reader) {
-            throw new Error('No response stream available');
+            throw new Error("No response stream available");
           }
 
-          let assistantContent = '';
+          let assistantContent = "";
           const assistantMessage = {
             id: (Date.now() + 1).toString(),
-            role: 'assistant',
-            content: '',
-            evidence: queryEvidence || undefined
+            role: "assistant",
+            content: "",
+            evidence: queryEvidence || undefined,
           };
 
-          setMessages(prev => [...prev, assistantMessage]);
+          setMessages((prev) => [...prev, assistantMessage]);
 
           while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
             const chunk = new TextDecoder().decode(value);
-            const lines = chunk.split('\n');
+            const lines = chunk.split("\n");
 
             for (const line of lines) {
               if (line.startsWith('0:"')) {
                 // Extract the content from the streaming format
                 const match = line.match(/^0:"(.*)"/);
                 if (match) {
-                  const content = match[1].replace(/\\n/g, '\n').replace(/\\"/g, '"');
+                  const content = match[1]
+                    .replace(/\\n/g, "\n")
+                    .replace(/\\"/g, '"');
                   assistantContent = content; // Use the full content, not append
-                  
-                  setMessages(prev => prev.map(msg => 
-                    msg.id === assistantMessage.id 
-                      ? { ...msg, content: assistantContent }
-                      : msg
-                  ));
+
+                  setMessages((prev) =>
+                    prev.map((msg) =>
+                      msg.id === assistantMessage.id
+                        ? { ...msg, content: assistantContent }
+                        : msg
+                    )
+                  );
                 }
               }
             }
           }
-
         } catch (error) {
-          console.error('Initial query error:', error);
+          console.error("Initial query error:", error);
           const errorMessage = {
             id: (Date.now() + 1).toString(),
-            role: 'assistant',
+            role: "assistant",
             content: `I encountered an error while analyzing your query. Please try again or rephrase your question.
 
 I can help you analyze Toronto&apos;s budget data with questions like:
@@ -597,15 +688,15 @@ I can help you analyze Toronto&apos;s budget data with questions like:
 - "What are the top 5 programs by spending?"
 - "How much revenue did Toronto collect last year?"
 
-Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+Error: ${error instanceof Error ? error.message : "Unknown error"}`,
           };
-          setMessages(prev => [...prev, errorMessage]);
+          setMessages((prev) => [...prev, errorMessage]);
         } finally {
           setIsLoading(false);
           setLoadingStep(0);
         }
       };
-      
+
       submitInitialQuery();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -615,7 +706,9 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
       <div className="flex items-center space-x-3 mb-6">
         <Bot className="w-6 h-6 text-blue-600" />
-        <h3 className="text-lg font-semibold text-gray-900">Toronto Budget AI Analyst</h3>
+        <h3 className="text-lg font-semibold text-gray-900">
+          Toronto Budget AI Analyst
+        </h3>
         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center space-x-1">
           <Database className="w-3 h-3" />
           <span>AI-Powered SQL Analysis</span>
@@ -627,7 +720,9 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
         {messages.length === 0 && (
           <div className="text-center py-8">
             <Bot className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-gray-500">Ask me anything about Toronto&apos;s budget data!</p>
+            <p className="text-gray-500">
+              Ask me anything about Toronto&apos;s budget data!
+            </p>
           </div>
         )}
 
@@ -635,29 +730,29 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
           <div
             key={message.id}
             className={`flex items-start space-x-3 ${
-              message.role === 'user' ? 'justify-end' : 'justify-start'
+              message.role === "user" ? "justify-end" : "justify-start"
             }`}
           >
-            {message.role === 'assistant' && (
+            {message.role === "assistant" && (
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <Bot className="w-4 h-4 text-blue-600" />
               </div>
             )}
-            
+
             <div
               className={`max-w-3xl px-4 py-3 rounded-lg ${
-                message.role === 'user'
-                  ? 'bg-blue-600 text-white ml-auto'
-                  : 'bg-gray-50 text-gray-900'
+                message.role === "user"
+                  ? "bg-blue-600 text-white ml-auto"
+                  : "bg-gray-50 text-gray-900"
               }`}
             >
               <MessageContent content={message.content} />
-              {message.role === 'assistant' && message.evidence && (
+              {message.role === "assistant" && message.evidence && (
                 <EvidenceSection evidence={message.evidence} />
               )}
             </div>
 
-            {message.role === 'user' && (
+            {message.role === "user" && (
               <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                 <User className="w-4 h-4 text-gray-600" />
               </div>
@@ -665,9 +760,7 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
           </div>
         ))}
 
-        {isLoading && (
-          <LoadingSteps currentStep={loadingStep} />
-        )}
+        {isLoading && <LoadingSteps currentStep={loadingStep} />}
       </div>
 
       {/* Input Form */}
@@ -691,4 +784,4 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}`
       </form>
     </div>
   );
-} 
+}
