@@ -4,15 +4,7 @@ import { motion } from "framer-motion";
 import { DollarSign, MapPin, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-
-interface AuroraBackgroundProps extends React.HTMLProps<HTMLDivElement> {
-  children: React.ReactNode;
-  showRadialGradient?: boolean;
-}
-
-interface TorontoBudgetHeroProps {
-  onStartExploring?: () => void;
-}
+import { AuroraBackgroundProps, TorontoBudgetHeroProps } from "@/types";
 
 const AuroraBackground = ({
   className,
@@ -78,9 +70,10 @@ const BlurText: React.FC<{
     setInView(true);
   }, []);
 
-  const defaultFrom = direction === "top"
-    ? { filter: "blur(10px)", opacity: 0, y: -50 }
-    : { filter: "blur(10px)", opacity: 0, y: 50 };
+  const defaultFrom =
+    direction === "top"
+      ? { filter: "blur(10px)", opacity: 0, y: -50 }
+      : { filter: "blur(10px)", opacity: 0, y: 50 };
 
   const defaultTo = { filter: "blur(0px)", opacity: 1, y: 0 };
 
@@ -94,7 +87,7 @@ const BlurText: React.FC<{
           transition={{
             duration: 0.8,
             delay: (index * delay) / 1000,
-            ease: "easeOut"
+            ease: "easeOut",
           }}
           style={{
             display: "inline-block",
@@ -180,11 +173,11 @@ function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
     <AuroraBackground className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
       <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden py-16 px-4">
         {/* Pixelated Toronto Skyline Background */}
-        <div 
+        <div
           className="absolute inset-0 opacity-30 bg-cover bg-center bg-no-repeat"
           style={{
             backgroundImage: `url('/toronto-skyline-pixelated.png')`,
-            filter: 'blur(0.5px)',
+            filter: "blur(0.5px)",
           }}
         />
 
@@ -277,8 +270,9 @@ function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
               transition={{ duration: 1, delay: 0.9 }}
             >
               <p className="text-base sm:text-lg md:text-xl text-white/70 leading-relaxed font-light tracking-wide max-w-3xl mx-auto">
-                Discover how Toronto spends your tax dollars with interactive visualizations, 
-                detailed breakdowns, and insights that make municipal budgets accessible to everyone.
+                Discover how Toronto spends your tax dollars with interactive
+                visualizations, detailed breakdowns, and insights that make
+                municipal budgets accessible to everyone.
               </p>
             </motion.div>
 
@@ -309,7 +303,7 @@ function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1, delay: 1.3 }}
             >
-              <button 
+              <button
                 onClick={onStartExploring}
                 className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-blue-600 hover:from-emerald-600 hover:to-blue-700 text-white font-semibold rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
@@ -326,4 +320,4 @@ function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
   );
 }
 
-export default TorontoBudgetHero; 
+export default TorontoBudgetHero;

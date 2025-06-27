@@ -8,6 +8,12 @@ import {
   DATABASE_SCHEMA, 
   QUERY_EXAMPLES 
 } from '@/lib/database';
+import { 
+  BudgetRecord, 
+  QueryEvidence, 
+  VisualizationAnalysis, 
+  ChartType 
+} from '@/types';
 
 // Use Node.js runtime for database access
 export const runtime = 'nodejs';
@@ -21,31 +27,6 @@ const SQLGenerationSchema = z.object({
   // Confidence score for the generated SQL
   confidence: z.number().min(0).max(1).describe('Confidence level in the generated SQL (0-1)')
 });
-
-interface BudgetRecord {
-  [key: string]: string | number;
-}
-
-interface QueryEvidence {
-  sql: string;
-  data: BudgetRecord[];
-  confidence: number;
-  queryType: string;
-  totalRows: number;
-  dataSource?: string;
-  dataRange?: string;
-  lastUpdated?: string;
-  totalRecords?: number;
-  // Add these new fields for visualization
-  shouldVisualize?: boolean;
-  chartType?: 'line' | 'bar' | 'pie' | 'area' | 'comparison';
-  chartConfig?: {
-    xField: string;
-    yField: string;
-    groupField?: string;
-    title?: string;
-  };
-}
 
 export async function POST(req: Request) {
   try {
@@ -194,7 +175,7 @@ Important: Use the REAL numbers from the data, not placeholders!`;
 }
 
 // Add this function after imports
-function analyzeVisualizationNeeds(question: string, queryType: string, data: any[]) {
+function analyzeVisualizationNeeds(question: string, queryType: string, data: any[]): VisualizationAnalysis {
   const lowercaseQuestion = question.toLowerCase();
   
   // Patterns that suggest visualization would be helpful

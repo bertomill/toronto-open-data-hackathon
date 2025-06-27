@@ -1,13 +1,8 @@
 import { openai } from '@ai-sdk/openai';
 import { streamText } from 'ai';
+import { ChatMessage } from '@/types';
 
 export const runtime = 'edge';
-
-interface ChatMessage {
-  role: string;
-  content: string;
-  id?: string;
-}
 
 // Function to create a streaming response from text
 function createStreamingResponse(text: string) {

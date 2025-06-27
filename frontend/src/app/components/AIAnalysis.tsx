@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send,
   Bot,
@@ -18,38 +18,15 @@ import {
   Table,
 } from "lucide-react";
 import ChartVisualization from "./ChartVisualization";
-
-interface BudgetRecord {
-  [key: string]: string | number;
-}
-
-interface AIAnalysisProps {
-  data: BudgetRecord[];
-  query: string;
-}
-
-interface QueryEvidence {
-  sql: string;
-  data: BudgetRecord[];
-  confidence: number;
-  queryType: string;
-  totalRows: number;
-  dataSource?: string;
-  dataRange?: string;
-  lastUpdated?: string;
-  totalRecords?: number;
-  shouldVisualize?: boolean;
-  chartType?: "line" | "bar" | "pie" | "area" | "comparison";
-  chartConfig?: {
-    xField: string;
-    yField: string;
-    groupField?: string;
-    title?: string;
-  };
-}
+import {
+  BudgetRecord,
+  AIAnalysisProps,
+  QueryEvidence,
+  LoadingStep,
+} from "@/types";
 
 // Loading steps with icons and messages
-const LOADING_STEPS = [
+const LOADING_STEPS: LoadingStep[] = [
   { icon: Search, message: "Analyzing your question...", duration: 1000 },
   { icon: Database, message: "Searching budget database...", duration: 1500 },
   { icon: Brain, message: "Understanding data patterns...", duration: 1200 },

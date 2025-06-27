@@ -1,46 +1,34 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Papa from 'papaparse';
-import { TrendingUp, MessageCircle, BarChart3, Search } from 'lucide-react';
-import Image from 'next/image';
-import AIAnalysis from './components/AIAnalysis';
-import TorontoBudgetHero from '@/components/ui/TorontoBudgetHero';
-import Sidebar from '@/components/ui/Sidebar';
-import DataDispensations from '@/components/DataDispensations';
-import DataViewer from '@/components/DataViewer';
-import HowItWorks from '@/components/HowItWorks';
-import { cn } from '@/lib/utils';
-
-interface BudgetData {
-  Program: string;
-  Service: string;
-  Activity: string;
-  'Expense/Revenue': string;
-  'Category Name': string;
-  'Sub-Category Name': string;
-  'Commitment item': string;
-  Amount: string;
-  Year: string;
-  [key: string]: string; // Add index signature for compatibility
-}
+import { useState, useEffect } from "react";
+import Papa from "papaparse";
+import { TrendingUp, MessageCircle, BarChart3, Search } from "lucide-react";
+import Image from "next/image";
+import AIAnalysis from "./components/AIAnalysis";
+import TorontoBudgetHero from "@/components/ui/TorontoBudgetHero";
+import Sidebar from "@/components/ui/Sidebar";
+import DataDispensations from "@/components/DataDispensations";
+import DataViewer from "@/components/DataViewer";
+import HowItWorks from "@/components/HowItWorks";
+import { cn } from "@/lib/utils";
+import { BudgetData } from "@/types";
 
 export default function Home() {
   const [data, setData] = useState<BudgetData[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalBudget, setTotalBudget] = useState(0);
   const [showAI, setShowAI] = useState(false);
-  const [selectedQuery, setSelectedQuery] = useState<string>('');
+  const [selectedQuery, setSelectedQuery] = useState<string>("");
   const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
   const [showHero, setShowHero] = useState(true);
-  const [currentPage, setCurrentPage] = useState('home');
+  const [currentPage, setCurrentPage] = useState("home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const loadData = async () => {
     try {
-      const response = await fetch('/toronto_budget_combined_2024_to_2019.csv');
+      const response = await fetch("/toronto_budget_combined_2024_to_2019.csv");
       const csvText = await response.text();
-      
+
       Papa.parse(csvText, {
         header: true,
         complete: (results) => {
@@ -51,7 +39,7 @@ export default function Home() {
         },
       });
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error("Error loading data:", error);
       setLoading(false);
     }
   };
@@ -64,8 +52,8 @@ export default function Home() {
     let total = 0;
 
     budgetData.forEach((row) => {
-      const amountStr = row.Amount || '0';
-      const amount = parseFloat(amountStr.replace(/,/g, '')) || 0;
+      const amountStr = row.Amount || "0";
+      const amount = parseFloat(amountStr.replace(/,/g, "")) || 0;
       total += Math.abs(amount);
     });
 
@@ -91,16 +79,16 @@ export default function Home() {
 
   const handleStartExploring = () => {
     // Just scroll to the search section, keep hero visible
-    const searchSection = document.getElementById('search-section');
+    const searchSection = document.getElementById("search-section");
     if (searchSection) {
-      searchSection.scrollIntoView({ behavior: 'smooth' });
+      searchSection.scrollIntoView({ behavior: "smooth" });
     }
   };
 
   const handlePageChange = (page: string) => {
     setCurrentPage(page);
     setShowAI(false);
-    setShowHero(page === 'home');
+    setShowHero(page === "home");
   };
 
   const handleSidebarCollapseChange = (collapsed: boolean) => {
@@ -114,8 +102,8 @@ export default function Home() {
         "Show me the total salary expenses year over year with percentage changes",
         "Compare salary expenses across all departments from 2019 to 2024",
         "What's the trend in employee compensation costs over the past 6 years?",
-        "How much has the city's total payroll budget increased since 2019?"
-      ]
+        "How much has the city's total payroll budget increased since 2019?",
+      ],
     },
     {
       title: "How much tax revenue was collected in 2024?",
@@ -123,8 +111,8 @@ export default function Home() {
         "How much tax revenue was collected in 2024 compared to 2023?",
         "Break down all revenue sources for 2024 including taxes, fees, and grants",
         "What percentage of 2024 revenue came from property taxes?",
-        "Show me the top 5 revenue sources for the city in 2024"
-      ]
+        "Show me the top 5 revenue sources for the city in 2024",
+      ],
     },
     {
       title: "What department does the city spend the most on?",
@@ -132,8 +120,8 @@ export default function Home() {
         "What department does the city spend the most on and by how much?",
         "Rank all city departments by total spending in 2024",
         "Which departments have the largest budget allocations?",
-        "Compare spending between police, fire, and transit departments"
-      ]
+        "Compare spending between police, fire, and transit departments",
+      ],
     },
     {
       title: "How much has the budget grown year over year?",
@@ -141,8 +129,8 @@ export default function Home() {
         "How much has the total budget grown year over year as a percentage?",
         "Show me the annual budget growth rate from 2019 to 2024",
         "What's driving the biggest increases in city spending?",
-        "Compare budget growth to Toronto's population and inflation growth"
-      ]
+        "Compare budget growth to Toronto's population and inflation growth",
+      ],
     },
     {
       title: "What program budget has grown the most?",
@@ -150,9 +138,9 @@ export default function Home() {
         "What program budget has grown the most in dollar terms and percentage?",
         "Which programs saw the biggest budget increases from 2023 to 2024?",
         "Show me the top 10 programs with the highest growth rates",
-        "What new programs were added and how much do they cost?"
-      ]
-    }
+        "What new programs were added and how much do they cost?",
+      ],
+    },
   ];
 
   const analysisOptions = [
@@ -162,21 +150,22 @@ export default function Home() {
       icon: TrendingUp,
       options: [
         "budget trends over time",
-        "expense vs revenue patterns", 
+        "expense vs revenue patterns",
         "top spending programs",
-        "year-over-year changes"
-      ]
+        "year-over-year changes",
+      ],
     },
     {
       category: "Create",
-      color: "bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200", 
+      color:
+        "bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200",
       icon: BarChart3,
       options: [
         "budget comparison charts",
         "spending visualization",
         "trend analysis dashboard",
-        "interactive budget explorer"
-      ]
+        "interactive budget explorer",
+      ],
     },
     {
       category: "Explore",
@@ -185,10 +174,10 @@ export default function Home() {
       options: [
         "program deep dives",
         "category breakdowns",
-        "service-level insights", 
-        "budget allocation patterns"
-      ]
-    }
+        "service-level insights",
+        "budget allocation patterns",
+      ],
+    },
   ];
 
   if (loading) {
@@ -205,19 +194,21 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white flex">
       {/* Sidebar */}
-      <Sidebar 
-        currentPage={currentPage} 
+      <Sidebar
+        currentPage={currentPage}
         onPageChange={handlePageChange}
         onCollapseChange={handleSidebarCollapseChange}
       />
-      
+
       {/* Main Content */}
-      <div className={cn(
-        "flex-1 transition-all duration-300",
-        sidebarCollapsed ? "md:ml-20" : "md:ml-64"
-      )}>
+      <div
+        className={cn(
+          "flex-1 transition-all duration-300",
+          sidebarCollapsed ? "md:ml-20" : "md:ml-64"
+        )}
+      >
         {/* Home Page */}
-        {currentPage === 'home' && (
+        {currentPage === "home" && (
           <>
             {/* Show Hero Section */}
             {showHero && !showAI && (
@@ -231,17 +222,17 @@ export default function Home() {
               <div id="search-section">
                 {/* Background Image for main content - only show when hero is not visible */}
                 {!showHero && (
-                  <div 
+                  <div
                     className="absolute inset-0 opacity-15"
                     style={{
                       backgroundImage: "url('/Toronto-cartoon.png')",
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundRepeat: 'no-repeat'
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
                     }}
                   />
                 )}
-                
+
                 {/* Content Overlay */}
                 <div className="relative z-10">
                   {/* Minimal Header - only show when hero is not visible */}
@@ -259,7 +250,9 @@ export default function Home() {
                                 className="object-cover w-full h-full"
                               />
                             </div>
-                            <span className="text-xl font-semibold text-gray-800">DollarSense</span>
+                            <span className="text-xl font-semibold text-gray-800">
+                              DollarSense
+                            </span>
                           </div>
                           <div className="text-sm text-gray-600 font-medium bg-gray-100/80 px-3 py-1 rounded-full">
                             Toronto Budget Explorer
@@ -288,8 +281,10 @@ export default function Home() {
                             Hello there
                           </h1>
                           <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed font-normal">
-                            What would you like to know about Toronto&apos;s budget? I can help you analyze spending patterns, 
-                            compare programs, or explore financial trends from 2019 to 2024.
+                            What would you like to know about Toronto&apos;s
+                            budget? I can help you analyze spending patterns,
+                            compare programs, or explore financial trends from
+                            2019 to 2024.
                           </p>
                         </div>
                       </div>
@@ -305,15 +300,21 @@ export default function Home() {
                             placeholder="Ask me anything about Toronto's budget data..."
                             className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
                             onKeyPress={(e) => {
-                              if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                              if (
+                                e.key === "Enter" &&
+                                e.currentTarget.value.trim()
+                              ) {
                                 handleQuerySubmit(e.currentTarget.value);
                               }
                             }}
                           />
-                          <button 
+                          <button
                             className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
                             onClick={(e) => {
-                              const input = e.currentTarget.parentElement?.querySelector('input');
+                              const input =
+                                e.currentTarget.parentElement?.querySelector(
+                                  "input"
+                                );
                               if (input && input.value.trim()) {
                                 handleQuerySubmit(input.value);
                               }
@@ -333,7 +334,9 @@ export default function Home() {
                           <div key={category.category} className="space-y-4">
                             <div className="flex items-center space-x-3 mb-4">
                               <IconComponent className="w-5 h-5 text-gray-600" />
-                              <h3 className="text-lg font-medium text-gray-800">{category.category}</h3>
+                              <h3 className="text-lg font-medium text-gray-800">
+                                {category.category}
+                              </h3>
                             </div>
                             <div className="space-y-3">
                               {category.options.map((option) => (
@@ -357,33 +360,50 @@ export default function Home() {
 
                     {/* Example Prompts */}
                     <div className="mb-16">
-                      <h3 className="text-lg font-medium text-gray-800 mb-6 text-center">Try asking me...</h3>
+                      <h3 className="text-lg font-medium text-gray-800 mb-6 text-center">
+                        Try asking me...
+                      </h3>
                       <div className="space-y-3 max-w-2xl mx-auto">
                         {examplePrompts.map((prompt, index) => (
-                          <div key={index} className="border border-gray-200 rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
+                          <div
+                            key={index}
+                            className="border border-gray-200 rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
+                          >
                             <button
-                              onClick={() => setExpandedPrompt(expandedPrompt === prompt.title ? null : prompt.title)}
+                              onClick={() =>
+                                setExpandedPrompt(
+                                  expandedPrompt === prompt.title
+                                    ? null
+                                    : prompt.title
+                                )
+                              }
                               className="w-full text-left px-6 py-4 focus:outline-none"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="text-gray-700 font-medium">{prompt.title}</span>
+                                <span className="text-gray-700 font-medium">
+                                  {prompt.title}
+                                </span>
                                 <span className="text-gray-400 text-sm">
-                                  {expandedPrompt === prompt.title ? '−' : '+'}
+                                  {expandedPrompt === prompt.title ? "−" : "+"}
                                 </span>
                               </div>
                             </button>
                             {expandedPrompt === prompt.title && (
                               <div className="px-6 pb-4 border-t border-gray-100 mt-2 pt-4">
                                 <div className="space-y-2">
-                                  {prompt.expanded.map((expandedPrompt, expandedIndex) => (
-                                    <button
-                                      key={expandedIndex}
-                                      onClick={() => handleQuerySubmit(expandedPrompt)}
-                                      className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                    >
-                                      {expandedPrompt}
-                                    </button>
-                                  ))}
+                                  {prompt.expanded.map(
+                                    (expandedPrompt, expandedIndex) => (
+                                      <button
+                                        key={expandedIndex}
+                                        onClick={() =>
+                                          handleQuerySubmit(expandedPrompt)
+                                        }
+                                        className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                                      >
+                                        {expandedPrompt}
+                                      </button>
+                                    )
+                                  )}
                                 </div>
                               </div>
                             )}
@@ -394,22 +414,34 @@ export default function Home() {
 
                     {/* Dataset Stats */}
                     <div className="bg-gray-50/90 backdrop-blur-sm rounded-3xl p-8 border border-gray-100">
-                      <h3 className="text-lg font-medium text-gray-800 mb-6 text-center">Dataset Overview</h3>
+                      <h3 className="text-lg font-medium text-gray-800 mb-6 text-center">
+                        Dataset Overview
+                      </h3>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div className="text-center">
-                          <div className="text-3xl font-semibold text-gray-800 mb-1">{formatCompactCurrency(totalBudget)}</div>
-                          <div className="text-sm text-gray-600">Total Budget</div>
+                          <div className="text-3xl font-semibold text-gray-800 mb-1">
+                            {formatCompactCurrency(totalBudget)}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Total Budget
+                          </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-3xl font-semibold text-gray-800 mb-1">6</div>
+                          <div className="text-3xl font-semibold text-gray-800 mb-1">
+                            6
+                          </div>
                           <div className="text-sm text-gray-600">Years</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-3xl font-semibold text-gray-800 mb-1">{data.length.toLocaleString()}</div>
+                          <div className="text-3xl font-semibold text-gray-800 mb-1">
+                            {data.length.toLocaleString()}
+                          </div>
                           <div className="text-sm text-gray-600">Records</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-3xl font-semibold text-gray-800 mb-1">{new Set(data.map(d => d.Program)).size}</div>
+                          <div className="text-3xl font-semibold text-gray-800 mb-1">
+                            {new Set(data.map((d) => d.Program)).size}
+                          </div>
                           <div className="text-sm text-gray-600">Programs</div>
                         </div>
                       </div>
@@ -419,8 +451,11 @@ export default function Home() {
                   {/* Footer */}
                   <footer className="text-center py-8 px-6">
                     <p className="text-sm text-gray-500">
-                      DollarSense may display inaccurate info, including about budget data, so double-check responses.{' '}
-                      <span className="underline cursor-pointer hover:text-gray-700">Privacy Notice</span>
+                      DollarSense may display inaccurate info, including about
+                      budget data, so double-check responses.{" "}
+                      <span className="underline cursor-pointer hover:text-gray-700">
+                        Privacy Notice
+                      </span>
                     </p>
                   </footer>
                 </div>
@@ -431,16 +466,16 @@ export default function Home() {
             {showAI && (
               <div className="min-h-screen bg-white">
                 {/* Background Image for AI content */}
-                <div 
+                <div
                   className="absolute inset-0 opacity-15"
                   style={{
                     backgroundImage: "url('/Toronto-cartoon.png')",
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
                   }}
                 />
-                
+
                 {/* Content Overlay */}
                 <div className="relative z-10">
                   {/* Header for AI mode */}
@@ -457,7 +492,9 @@ export default function Home() {
                               className="object-cover w-full h-full"
                             />
                           </div>
-                          <span className="text-xl font-semibold text-gray-800">DollarSense</span>
+                          <span className="text-xl font-semibold text-gray-800">
+                            DollarSense
+                          </span>
                         </div>
                         <div className="text-sm text-gray-600 font-medium bg-gray-100/80 px-3 py-1 rounded-full">
                           Toronto Budget Explorer
@@ -473,7 +510,7 @@ export default function Home() {
                         <button
                           onClick={() => {
                             setShowAI(false);
-                            setSelectedQuery('');
+                            setSelectedQuery("");
                             setShowHero(true);
                           }}
                           className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
@@ -492,19 +529,13 @@ export default function Home() {
         )}
 
         {/* Data Dispensations Page */}
-        {currentPage === 'dispensations' && (
-          <DataDispensations data={data} />
-        )}
+        {currentPage === "dispensations" && <DataDispensations data={data} />}
 
         {/* Data Viewer Page */}
-        {currentPage === 'viewer' && (
-          <DataViewer data={data} />
-        )}
+        {currentPage === "viewer" && <DataViewer data={data} />}
 
         {/* How It Works Page */}
-        {currentPage === 'how-it-works' && (
-          <HowItWorks />
-        )}
+        {currentPage === "how-it-works" && <HowItWorks />}
       </div>
     </div>
   );

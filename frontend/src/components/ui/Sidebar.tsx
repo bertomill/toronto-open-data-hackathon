@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from 'react';
-import { Home, Database, Table, Menu, X, ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { useState } from "react";
+import {
+  Home,
+  Database,
+  Table,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Lightbulb,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { SidebarProps } from "@/types";
 
-interface SidebarProps {
-  currentPage: string;
-  onPageChange: (page: string) => void;
-  onCollapseChange?: (collapsed: boolean) => void;
-}
-
-export default function Sidebar({ currentPage, onPageChange, onCollapseChange }: SidebarProps) {
+export default function Sidebar({
+  currentPage,
+  onPageChange,
+  onCollapseChange,
+}: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false); // Mobile menu state
   const [isCollapsed, setIsCollapsed] = useState(false); // Desktop collapse state
 
@@ -23,29 +31,29 @@ export default function Sidebar({ currentPage, onPageChange, onCollapseChange }:
 
   const menuItems = [
     {
-      id: 'home',
-      label: 'Home',
+      id: "home",
+      label: "Home",
       icon: Home,
-      description: 'Main dashboard and AI analysis'
+      description: "Main dashboard and AI analysis",
     },
     {
-      id: 'dispensations',
-      label: 'Data Dispensations',
+      id: "dispensations",
+      label: "Data Dispensations",
       icon: Database,
-      description: 'Budget allocations and distributions'
+      description: "Budget allocations and distributions",
     },
     {
-      id: 'viewer',
-      label: 'Data Viewer',
+      id: "viewer",
+      label: "Data Viewer",
       icon: Table,
-      description: 'Browse raw budget data'
+      description: "Browse raw budget data",
     },
     {
-      id: 'how-it-works',
-      label: 'How It Works',
+      id: "how-it-works",
+      label: "How It Works",
       icon: Lightbulb,
-      description: 'Technical architecture overview'
-    }
+      description: "Technical architecture overview",
+    },
   ];
 
   return (
@@ -74,24 +82,30 @@ export default function Sidebar({ currentPage, onPageChange, onCollapseChange }:
       </button>
 
       {/* Sidebar */}
-      <div className={cn(
-        "fixed left-0 top-0 h-full bg-white/10 backdrop-blur-xl border-r border-white/20 shadow-xl z-40 transition-all duration-300 ease-in-out",
-        // Mobile responsive
-        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
-        // Desktop width based on collapsed state
-        isCollapsed ? "md:w-20" : "md:w-64",
-        // Mobile always full width when open
-        "w-64"
-      )}>
+      <div
+        className={cn(
+          "fixed left-0 top-0 h-full bg-white/10 backdrop-blur-xl border-r border-white/20 shadow-xl z-40 transition-all duration-300 ease-in-out",
+          // Mobile responsive
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          // Desktop width based on collapsed state
+          isCollapsed ? "md:w-20" : "md:w-64",
+          // Mobile always full width when open
+          "w-64"
+        )}
+      >
         {/* Header */}
-        <div className={cn(
-          "p-6 border-b border-white/20",
-          isCollapsed && "md:p-4"
-        )}>
-          <div className={cn(
-            "flex items-center transition-all duration-300",
-            isCollapsed ? "md:justify-center md:space-x-0" : "space-x-3"
-          )}>
+        <div
+          className={cn(
+            "p-6 border-b border-white/20",
+            isCollapsed && "md:p-4"
+          )}
+        >
+          <div
+            className={cn(
+              "flex items-center transition-all duration-300",
+              isCollapsed ? "md:justify-center md:space-x-0" : "space-x-3"
+            )}
+          >
             <div className="w-10 h-10 relative bg-white/90 rounded-full shadow-md border border-white/30 overflow-hidden flex-shrink-0">
               <Image
                 src="/dollarsense.png"
@@ -101,25 +115,28 @@ export default function Sidebar({ currentPage, onPageChange, onCollapseChange }:
                 className="object-cover w-full h-full"
               />
             </div>
-            <div className={cn(
-              "transition-all duration-300 overflow-hidden",
-              isCollapsed ? "md:w-0 md:opacity-0" : "w-auto opacity-100"
-            )}>
-              <h1 className="text-lg font-semibold text-gray-800 whitespace-nowrap">DollarSense</h1>
-              <p className="text-xs text-gray-600 whitespace-nowrap">Toronto Budget Explorer</p>
+            <div
+              className={cn(
+                "transition-all duration-300 overflow-hidden",
+                isCollapsed ? "md:w-0 md:opacity-0" : "w-auto opacity-100"
+              )}
+            >
+              <h1 className="text-lg font-semibold text-gray-800 whitespace-nowrap">
+                DollarSense
+              </h1>
+              <p className="text-xs text-gray-600 whitespace-nowrap">
+                Toronto Budget Explorer
+              </p>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className={cn(
-          "p-4 space-y-2",
-          isCollapsed && "md:p-2"
-        )}>
+        <nav className={cn("p-4 space-y-2", isCollapsed && "md:p-2")}>
           {menuItems.map((item) => {
             const IconComponent = item.icon;
             const isActive = currentPage === item.id;
-            
+
             return (
               <button
                 key={item.id}
@@ -130,34 +147,46 @@ export default function Sidebar({ currentPage, onPageChange, onCollapseChange }:
                 className={cn(
                   "w-full text-left rounded-lg transition-all duration-300 group relative",
                   isCollapsed ? "md:p-3 md:flex md:justify-center" : "p-3",
-                  isActive 
-                    ? "bg-white/20 text-gray-800 border border-white/30 shadow-sm" 
+                  isActive
+                    ? "bg-white/20 text-gray-800 border border-white/30 shadow-sm"
                     : "hover:bg-white/10 text-gray-700 hover:text-gray-900"
                 )}
                 title={isCollapsed ? item.label : undefined}
               >
-                <div className={cn(
-                  "flex items-center transition-all duration-300",
-                  isCollapsed ? "md:justify-center md:space-x-0" : "space-x-3"
-                )}>
-                  <IconComponent className={cn(
-                    "h-5 w-5 flex-shrink-0",
-                    isActive ? "text-gray-700" : "text-gray-500 group-hover:text-gray-700"
-                  )} />
-                  <div className={cn(
-                    "transition-all duration-300 overflow-hidden",
-                    isCollapsed ? "md:w-0 md:opacity-0" : "w-auto opacity-100"
-                  )}>
-                    <div className="font-medium whitespace-nowrap">{item.label}</div>
-                    <div className={cn(
-                      "text-xs whitespace-nowrap",
-                      isActive ? "text-gray-600" : "text-gray-500"
-                    )}>
+                <div
+                  className={cn(
+                    "flex items-center transition-all duration-300",
+                    isCollapsed ? "md:justify-center md:space-x-0" : "space-x-3"
+                  )}
+                >
+                  <IconComponent
+                    className={cn(
+                      "h-5 w-5 flex-shrink-0",
+                      isActive
+                        ? "text-gray-700"
+                        : "text-gray-500 group-hover:text-gray-700"
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      "transition-all duration-300 overflow-hidden",
+                      isCollapsed ? "md:w-0 md:opacity-0" : "w-auto opacity-100"
+                    )}
+                  >
+                    <div className="font-medium whitespace-nowrap">
+                      {item.label}
+                    </div>
+                    <div
+                      className={cn(
+                        "text-xs whitespace-nowrap",
+                        isActive ? "text-gray-600" : "text-gray-500"
+                      )}
+                    >
                       {item.description}
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Tooltip for collapsed state */}
                 {isCollapsed && (
                   <div className="hidden md:block absolute left-full ml-2 top-1/2 transform -translate-y-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
@@ -170,14 +199,18 @@ export default function Sidebar({ currentPage, onPageChange, onCollapseChange }:
         </nav>
 
         {/* Footer */}
-        <div className={cn(
-          "absolute bottom-0 left-0 right-0 p-4 border-t border-white/20",
-          isCollapsed && "md:p-2"
-        )}>
-          <div className={cn(
-            "text-xs text-gray-600 text-center transition-all duration-300 overflow-hidden",
-            isCollapsed ? "md:opacity-0" : "opacity-100"
-          )}>
+        <div
+          className={cn(
+            "absolute bottom-0 left-0 right-0 p-4 border-t border-white/20",
+            isCollapsed && "md:p-2"
+          )}
+        >
+          <div
+            className={cn(
+              "text-xs text-gray-600 text-center transition-all duration-300 overflow-hidden",
+              isCollapsed ? "md:opacity-0" : "opacity-100"
+            )}
+          >
             <p>Toronto Open Data Hackathon</p>
             <p className="mt-1">Budget Transparency Tool</p>
           </div>
@@ -186,11 +219,11 @@ export default function Sidebar({ currentPage, onPageChange, onCollapseChange }:
 
       {/* Overlay for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/20 z-30 md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
     </>
   );
-} 
+}

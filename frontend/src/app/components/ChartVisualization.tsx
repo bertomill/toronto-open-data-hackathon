@@ -16,23 +16,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
-interface BudgetRecord {
-  [key: string]: string | number;
-}
-
-interface ChartConfig {
-  xField: string;
-  yField: string;
-  groupField?: string;
-  title?: string;
-}
-
-interface ChartVisualizationProps {
-  data: BudgetRecord[];
-  chartType: "line" | "bar" | "pie" | "area" | "comparison";
-  config: ChartConfig;
-}
+import { BudgetRecord, ChartConfig, ChartVisualizationProps } from "@/types";
 
 // Color palette for charts
 const COLORS = [
