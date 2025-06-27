@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Search, Download, ChevronLeft, ChevronRight } from "lucide-react";
-import { BudgetData, DataViewerProps } from "@/types";
+import { DataViewerProps } from "@/types";
 
 export default function DataViewer({ data }: DataViewerProps) {
   const [searchTerm, setSearchTerm] = useState("");

@@ -9,10 +9,8 @@ import {
   QUERY_EXAMPLES 
 } from '@/lib/database';
 import { 
-  BudgetRecord, 
-  QueryEvidence, 
-  VisualizationAnalysis, 
-  ChartType 
+  VisualizationAnalysis,
+  BudgetRecord,
 } from '@/types';
 
 // Use Node.js runtime for database access
@@ -140,7 +138,7 @@ Important: Use the REAL numbers from the data, not placeholders!`;
     });
 
     // Analyze if visualization would be helpful
-    const visualizationAnalysis = analyzeVisualizationNeeds(question, queryType, queryResults);
+    const visualizationAnalysis = analyzeVisualizationNeeds(question, queryType, queryResults as BudgetRecord[]);
 
     // Return successful response with all relevant data
     return Response.json({
@@ -175,7 +173,7 @@ Important: Use the REAL numbers from the data, not placeholders!`;
 }
 
 // Add this function after imports
-function analyzeVisualizationNeeds(question: string, queryType: string, data: any[]): VisualizationAnalysis {
+function analyzeVisualizationNeeds(question: string, queryType: string, data: BudgetRecord[]): VisualizationAnalysis {
   const lowercaseQuestion = question.toLowerCase();
   
   // Patterns that suggest visualization would be helpful

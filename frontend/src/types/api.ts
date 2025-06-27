@@ -1,22 +1,12 @@
-/**
- * API request/response and query-related types
- */
-
 import type { BudgetRecord } from './data';
 import type { ChartType, ChartConfig, VisualizationAnalysis } from './chart';
 
-/**
- * SQL query generation schema
- */
 export interface SQLGenerationResult {
   sql: string;
   queryType: 'summary' | 'trend' | 'comparison' | 'ranking' | 'specific';
   confidence: number;
 }
 
-/**
- * Query evidence containing all information about a database query
- */
 export interface QueryEvidence {
   sql: string;
   data: BudgetRecord[];
@@ -32,9 +22,6 @@ export interface QueryEvidence {
   chartConfig?: ChartConfig;
 }
 
-/**
- * Chat message structure
- */
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -42,16 +29,10 @@ export interface ChatMessage {
   id?: string;
 }
 
-/**
- * API Query Request
- */
 export interface QueryRequest {
   question: string;
 }
 
-/**
- * API Query Response
- */
 export interface QueryResponse {
   success: boolean;
   answer?: string;
@@ -75,9 +56,6 @@ export interface QueryResponse {
   examples?: string[];
 }
 
-/**
- * Analysis request for AI analysis endpoint
- */
 export interface AnalysisRequest {
   data: BudgetRecord[];
   query: string;

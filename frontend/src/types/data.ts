@@ -1,19 +1,7 @@
-/**
- * Core data types and database-related interfaces
- */
-
-/**
- * Generic budget record - used for API responses and chart data
- * Represents a flexible data structure that can contain any budget-related fields
- */
 export interface BudgetRecord {
   [key: string]: string | number;
 }
 
-/**
- * Raw budget data structure from CSV files
- * Represents the original structure of the Toronto budget data
- */
 export interface BudgetData {
   Program: string;
   Service: string;
@@ -27,9 +15,6 @@ export interface BudgetData {
   [key: string]: string;
 }
 
-/**
- * Database statistics for context and validation
- */
 export interface DatabaseStats {
   totalRecords: number;
   minYear: number;
@@ -40,9 +25,6 @@ export interface DatabaseStats {
   totalRevenue: number;
 }
 
-/**
- * Filter options for data viewer
- */
 export interface FilterOptions {
   searchTerm: string;
   selectedYear: string;
@@ -50,9 +32,6 @@ export interface FilterOptions {
   selectedType: string;
 }
 
-/**
- * Pagination options
- */
 export interface PaginationOptions {
   currentPage: number;
   pageSize: number;

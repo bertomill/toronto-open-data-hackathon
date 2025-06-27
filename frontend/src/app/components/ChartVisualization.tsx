@@ -16,7 +16,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { BudgetRecord, ChartConfig, ChartVisualizationProps } from "@/types";
+import { ChartVisualizationProps } from "@/types";
 
 // Color palette for charts
 const COLORS = [
@@ -33,9 +33,9 @@ const COLORS = [
 ];
 
 // Format large numbers for display
-const formatNumber = (value: any) => {
+const formatNumber = (value: string | number): string => {
   const num = Number(value);
-  if (isNaN(num)) return value;
+  if (isNaN(num)) return String(value);
 
   if (Math.abs(num) >= 1e9) {
     return `$${(num / 1e9).toFixed(1)}B`;
@@ -48,12 +48,20 @@ const formatNumber = (value: any) => {
 };
 
 // Custom tooltip for better formatting
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ dataKey: string; value: number; color: string }>;
+  label?: string;
+}) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
         <p className="font-semibold text-gray-800">{`${label}`}</p>
-        {payload.map((entry: any, index: number) => (
+        {payload.map((entry, index) => (
           <p key={index} className="text-sm" style={{ color: entry.color }}>
             {`${entry.dataKey}: ${formatNumber(entry.value)}`}
           </p>
@@ -174,161 +182,4 @@ export default function ChartVisualization({
       </div>
     </div>
   );
-}
-
-function analyzeVisualizationNeeds(
-  question: string,
-  queryType: string,
-  data: any[]
-) {
-  const lowercaseQuestion = question.toLowerCase();
-
-  // Patterns that suggest visualization would be helpful
-  const trendPatterns = [
-    "trend",
-    "over time",
-    "yearly",
-    "annual",
-    "growth",
-    "change",
-  ];
-  const comparisonPatterns = [
-    "compare",
-    "vs",
-    "versus",
-    "difference",
-    "between",
-  ];
-  const rankingPatterns = [
-    "top",
-    "bottom",
-    "highest",
-    "lowest",
-    "most",
-    "least",
-  ];
-  const distributionPatterns = [
-    "breakdown",
-    "distribution",
-    "share",
-    "percentage",
-  ];
-
-  // Check if data has enough points and right structure for charts
-  if (!data || data.length < 2) {
-    return { shouldVisualize: false };
-  }
-
-  const columns = Object.keys(data[0] || {});
-  const hasYearColumn = columns.some((col) =>
-    col.toLowerCase().includes("year")
-  );
-  const hasAmountColumn = columns.some(
-    (col) =>
-      col.toLowerCase().includes("amount") ||
-      col.toLowerCase().includes("total")
-  );
-
-  // Determine chart type based on patterns and data structure
-  if (
-    trendPatterns.some((pattern) => lowercaseQuestion.includes(pattern)) &&
-    hasYearColumn &&
-    hasAmountColumn
-  ) {
-    return {
-      shouldVisualize: true,
-      chartType: "line" as const,
-      chartConfig: {
-        xField:
-          columns.find((col) => col.toLowerCase().includes("year")) ||
-          columns[0],
-        yField:
-          columns.find(
-            (col) =>
-              col.toLowerCase().includes("amount") ||
-              col.toLowerCase().includes("total")
-          ) || columns[1],
-        title: "Spending Trend Over Time",
-      },
-    };
-  }
-
-  if (
-    comparisonPatterns.some((pattern) => lowercaseQuestion.includes(pattern)) &&
-    hasAmountColumn
-  ) {
-    return {
-      shouldVisualize: true,
-      chartType: "bar" as const,
-      chartConfig: {
-        xField:
-          columns.find(
-            (col) =>
-              !col.toLowerCase().includes("amount") &&
-              !col.toLowerCase().includes("total")
-          ) || columns[0],
-        yField:
-          columns.find(
-            (col) =>
-              col.toLowerCase().includes("amount") ||
-              col.toLowerCase().includes("total")
-          ) || columns[1],
-        title: "Comparison Analysis",
-      },
-    };
-  }
-
-  if (
-    rankingPatterns.some((pattern) => lowercaseQuestion.includes(pattern)) &&
-    data.length <= 10
-  ) {
-    return {
-      shouldVisualize: true,
-      chartType: "bar" as const,
-      chartConfig: {
-        xField:
-          columns.find(
-            (col) =>
-              !col.toLowerCase().includes("amount") &&
-              !col.toLowerCase().includes("total")
-          ) || columns[0],
-        yField:
-          columns.find(
-            (col) =>
-              col.toLowerCase().includes("amount") ||
-              col.toLowerCase().includes("total")
-          ) || columns[1],
-        title: "Top Rankings",
-      },
-    };
-  }
-
-  if (
-    distributionPatterns.some((pattern) =>
-      lowercaseQuestion.includes(pattern)
-    ) &&
-    data.length <= 8
-  ) {
-    return {
-      shouldVisualize: true,
-      chartType: "pie" as const,
-      chartConfig: {
-        xField:
-          columns.find(
-            (col) =>
-              !col.toLowerCase().includes("amount") &&
-              !col.toLowerCase().includes("total")
-          ) || columns[0],
-        yField:
-          columns.find(
-            (col) =>
-              col.toLowerCase().includes("amount") ||
-              col.toLowerCase().includes("total")
-          ) || columns[1],
-        title: "Distribution Breakdown",
-      },
-    };
-  }
-
-  return { shouldVisualize: false };
 }
