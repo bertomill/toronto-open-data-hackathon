@@ -9,23 +9,7 @@ import {
   Building,
   Calendar,
 } from "lucide-react";
-
-interface BudgetData {
-  Program: string;
-  Service: string;
-  Activity: string;
-  "Expense/Revenue": string;
-  "Category Name": string;
-  "Sub-Category Name": string;
-  "Commitment item": string;
-  Amount: string;
-  Year: string;
-  [key: string]: string;
-}
-
-interface DataDispensationsProps {
-  data: BudgetData[];
-}
+import { DataDispensationsProps } from "@/types";
 
 export default function DataDispensations({ data }: DataDispensationsProps) {
   const [selectedYear, setSelectedYear] = useState("2024");

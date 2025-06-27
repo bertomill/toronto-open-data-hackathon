@@ -2,14 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import { AnalysisRequest } from '@/types';
 
 const execAsync = promisify(exec);
 
 export const runtime = 'nodejs';
-
-interface AnalysisRequest {
-  query: string;
-}
 
 export async function POST(req: NextRequest) {
   let requestQuery = 'unknown';

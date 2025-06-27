@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Send,
   Bot,
@@ -17,30 +17,16 @@ import {
   Eye,
   Table,
 } from "lucide-react";
-
-interface BudgetRecord {
-  [key: string]: string | number;
-}
-
-interface AIAnalysisProps {
-  data: BudgetRecord[];
-  query: string;
-}
-
-interface QueryEvidence {
-  sql: string;
-  data: BudgetRecord[];
-  confidence: number;
-  queryType: string;
-  totalRows: number;
-  dataSource?: string;
-  dataRange?: string;
-  lastUpdated?: string;
-  totalRecords?: number;
-}
+import ChartVisualization from "./ChartVisualization";
+import {
+  BudgetRecord,
+  AIAnalysisProps,
+  QueryEvidence,
+  LoadingStep,
+} from "@/types";
 
 // Loading steps with icons and messages
-const LOADING_STEPS = [
+const LOADING_STEPS: LoadingStep[] = [
   { icon: Search, message: "Analyzing your question...", duration: 1000 },
   { icon: Database, message: "Searching budget database...", duration: 1500 },
   { icon: Brain, message: "Understanding data patterns...", duration: 1200 },
@@ -471,6 +457,9 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
               dataRange: queryData.metadata.dataRange,
               lastUpdated: queryData.metadata.lastUpdated,
               totalRecords: queryData.metadata.totalRecords,
+              shouldVisualize: queryData.visualization?.shouldVisualize,
+              chartType: queryData.visualization?.chartType,
+              chartConfig: queryData.visualization?.chartConfig,
             };
           }
         }
@@ -607,6 +596,9 @@ Error: ${error instanceof Error ? error.message : "Unknown error"}`,
                   dataRange: queryData.metadata.dataRange,
                   lastUpdated: queryData.metadata.lastUpdated,
                   totalRecords: queryData.metadata.totalRecords,
+                  shouldVisualize: queryData.visualization?.shouldVisualize,
+                  chartType: queryData.visualization?.chartType,
+                  chartConfig: queryData.visualization?.chartConfig,
                 };
               }
             }
@@ -747,6 +739,18 @@ Error: ${error instanceof Error ? error.message : "Unknown error"}`,
               }`}
             >
               <MessageContent content={message.content} />
+              {message.role === "assistant" &&
+                message.evidence?.shouldVisualize &&
+                message.evidence.chartType &&
+                message.evidence.chartConfig && (
+                  <div className="mt-4">
+                    <ChartVisualization
+                      data={message.evidence.data}
+                      chartType={message.evidence.chartType}
+                      config={message.evidence.chartConfig}
+                    />
+                  </div>
+                )}
               {message.role === "assistant" && message.evidence && (
                 <EvidenceSection evidence={message.evidence} />
               )}

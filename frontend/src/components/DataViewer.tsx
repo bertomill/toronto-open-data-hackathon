@@ -2,23 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Search, Download, ChevronLeft, ChevronRight } from "lucide-react";
-
-interface BudgetData {
-  Program: string;
-  Service: string;
-  Activity: string;
-  "Expense/Revenue": string;
-  "Category Name": string;
-  "Sub-Category Name": string;
-  "Commitment item": string;
-  Amount: string;
-  Year: string;
-  [key: string]: string;
-}
-
-interface DataViewerProps {
-  data: BudgetData[];
-}
+import { DataViewerProps } from "@/types";
 
 export default function DataViewer({ data }: DataViewerProps) {
   const [searchTerm, setSearchTerm] = useState("");

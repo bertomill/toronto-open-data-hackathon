@@ -1,3 +1,4 @@
+import { DatabaseStats } from '@/types';
 import Database from 'better-sqlite3';
 import path from 'path';
 
@@ -73,16 +74,6 @@ GROUP BY program ORDER BY total_spending DESC LIMIT 10;
 `;
 
 // Get database statistics
-export interface DatabaseStats {
-  totalRecords: number;
-  minYear: number;
-  maxYear: number;
-  uniquePrograms: number;
-  uniqueServices: number;
-  totalExpenses: number;
-  totalRevenue: number;
-}
-
 export function getDatabaseStats(): DatabaseStats {
   const db = getDatabase();
   const stats = db.prepare(`
