@@ -18,8 +18,10 @@ export default function DataViewer({ data }: DataViewerProps) {
   }, [data]);
 
   const programs = useMemo(() => {
-    const uniquePrograms = [...new Set(data.map((d) => d.Program))].sort();
-    return ["All", ...uniquePrograms.slice(0, 20)]; // Limit to first 20 for performance
+    const uniquePrograms = [
+      ...new Set(data.map((d) => d.Program?.toString().trim())),
+    ].sort();
+    return ["All", ...uniquePrograms]; // Show all programs
   }, [data]);
 
   const types = useMemo(() => {
@@ -38,7 +40,14 @@ export default function DataViewer({ data }: DataViewerProps) {
       const matchesProgram =
         selectedProgram === "All" || row.Program === selectedProgram;
 
-      const amount = parseFloat(row.Amount?.replace(/,/g, "") || "0");
+      // Clean and parse the amount value
+      let cleanAmount = row.Amount?.toString() || "0";
+      cleanAmount = cleanAmount
+        .replace(/[$,\s]/g, "") // Remove $, commas, and spaces
+        .replace(/[()]/g, "") // Remove parentheses
+        .trim();
+
+      const amount = isNaN(Number(cleanAmount)) ? 0 : parseFloat(cleanAmount);
       const isRevenue = row["Expense/Revenue"] === "Revenues" || amount < 0;
       const isExpense = row["Expense/Revenue"] === "Expenses" || amount >= 0;
 
@@ -59,7 +68,27 @@ export default function DataViewer({ data }: DataViewerProps) {
   const totalPages = Math.ceil(filteredData.length / pageSize);
 
   const formatCurrency = (value: string) => {
-    const num = parseFloat(value?.replace(/,/g, "") || "0");
+    // Handle various number formats and clean the string
+    let cleanValue = value?.toString() || "0";
+
+    // Remove common currency symbols and formatting
+    cleanValue = cleanValue
+      .replace(/[$,\s]/g, "") // Remove $, commas, and spaces
+      .replace(/[()]/g, "") // Remove parentheses
+      .trim();
+
+    // Handle empty or non-numeric values
+    if (!cleanValue || cleanValue === "" || isNaN(Number(cleanValue))) {
+      return "$0";
+    }
+
+    const num = parseFloat(cleanValue);
+
+    // Handle NaN explicitly
+    if (isNaN(num)) {
+      return "$0";
+    }
+
     if (num === 0) return "$0";
 
     if (Math.abs(num) >= 1e6) {
@@ -141,7 +170,7 @@ export default function DataViewer({ data }: DataViewerProps) {
           >
             {years.map((year) => (
               <option key={year} value={year}>
-                {year}
+                {year === "All" ? "All Years" : year}
               </option>
             ))}
           </select>
@@ -173,7 +202,11 @@ export default function DataViewer({ data }: DataViewerProps) {
           >
             {types.map((type) => (
               <option key={type} value={type}>
-                {type === "All" ? "All Types" : type}
+                {type === "All"
+                  ? "All Types"
+                  : type === "Expense"
+                  ? "Expenses"
+                  : type}
               </option>
             ))}
           </select>
@@ -259,7 +292,16 @@ export default function DataViewer({ data }: DataViewerProps) {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedData.map((row, index) => {
-                const amount = parseFloat(row.Amount?.replace(/,/g, "") || "0");
+                // Clean and parse the amount value
+                let cleanAmount = row.Amount?.toString() || "0";
+                cleanAmount = cleanAmount
+                  .replace(/[$,\s]/g, "") // Remove $, commas, and spaces
+                  .replace(/[()]/g, "") // Remove parentheses
+                  .trim();
+
+                const amount = isNaN(Number(cleanAmount))
+                  ? 0
+                  : parseFloat(cleanAmount);
                 const isRevenue =
                   row["Expense/Revenue"] === "Revenues" || amount < 0;
                 const type = isRevenue ? "Revenue" : "Expense";
