@@ -17,6 +17,7 @@ import {
   Eye,
   Table,
 } from "lucide-react";
+import ChartVisualization from "./ChartVisualization";
 
 interface BudgetRecord {
   [key: string]: string | number;
@@ -37,6 +38,14 @@ interface QueryEvidence {
   dataRange?: string;
   lastUpdated?: string;
   totalRecords?: number;
+  shouldVisualize?: boolean;
+  chartType?: "line" | "bar" | "pie" | "area" | "comparison";
+  chartConfig?: {
+    xField: string;
+    yField: string;
+    groupField?: string;
+    title?: string;
+  };
 }
 
 // Loading steps with icons and messages
@@ -471,6 +480,9 @@ export default function AIAnalysis({ query }: AIAnalysisProps) {
               dataRange: queryData.metadata.dataRange,
               lastUpdated: queryData.metadata.lastUpdated,
               totalRecords: queryData.metadata.totalRecords,
+              shouldVisualize: queryData.visualization?.shouldVisualize,
+              chartType: queryData.visualization?.chartType,
+              chartConfig: queryData.visualization?.chartConfig,
             };
           }
         }
@@ -607,6 +619,9 @@ Error: ${error instanceof Error ? error.message : "Unknown error"}`,
                   dataRange: queryData.metadata.dataRange,
                   lastUpdated: queryData.metadata.lastUpdated,
                   totalRecords: queryData.metadata.totalRecords,
+                  shouldVisualize: queryData.visualization?.shouldVisualize,
+                  chartType: queryData.visualization?.chartType,
+                  chartConfig: queryData.visualization?.chartConfig,
                 };
               }
             }
@@ -747,6 +762,18 @@ Error: ${error instanceof Error ? error.message : "Unknown error"}`,
               }`}
             >
               <MessageContent content={message.content} />
+              {message.role === "assistant" &&
+                message.evidence?.shouldVisualize &&
+                message.evidence.chartType &&
+                message.evidence.chartConfig && (
+                  <div className="mt-4">
+                    <ChartVisualization
+                      data={message.evidence.data}
+                      chartType={message.evidence.chartType}
+                      config={message.evidence.chartConfig}
+                    />
+                  </div>
+                )}
               {message.role === "assistant" && message.evidence && (
                 <EvidenceSection evidence={message.evidence} />
               )}

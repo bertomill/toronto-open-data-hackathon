@@ -22,6 +22,31 @@ const SQLGenerationSchema = z.object({
   confidence: z.number().min(0).max(1).describe('Confidence level in the generated SQL (0-1)')
 });
 
+interface BudgetRecord {
+  [key: string]: string | number;
+}
+
+interface QueryEvidence {
+  sql: string;
+  data: BudgetRecord[];
+  confidence: number;
+  queryType: string;
+  totalRows: number;
+  dataSource?: string;
+  dataRange?: string;
+  lastUpdated?: string;
+  totalRecords?: number;
+  // Add these new fields for visualization
+  shouldVisualize?: boolean;
+  chartType?: 'line' | 'bar' | 'pie' | 'area' | 'comparison';
+  chartConfig?: {
+    xField: string;
+    yField: string;
+    groupField?: string;
+    title?: string;
+  };
+}
+
 export async function POST(req: Request) {
   try {
     // Extract question from request body
@@ -121,20 +146,9 @@ Provide a clear, conversational answer that:
 3. Formats large numbers clearly (e.g., "$15.5 billion" instead of "$15475414089.78")
 4. Provides context when helpful
 5. Is concise but informative
-6. INCLUDES A "EVIDENCE" SECTION showing the SQL query and key data points
+6. Focuses on insights and key takeaways
 
-Format your response like this:
-[Main answer paragraph]
-
-**📊 Evidence:**
-\`\`\`sql
-${sql}
-\`\`\`
-
-**📋 Data Summary:**
-- [Key data points from results]
-- [Total records found: ${queryResults.length}]
-- [Any notable patterns or insights]
+Keep your response focused on the main answer. Do not include technical details like SQL queries or raw data - those will be shown separately in the UI.
 
 Important: Use the REAL numbers from the data, not placeholders!`;
 
@@ -143,6 +157,9 @@ Important: Use the REAL numbers from the data, not placeholders!`;
       model: openai('gpt-4o-mini'),
       prompt: answerGenerationPrompt,
     });
+
+    // Analyze if visualization would be helpful
+    const visualizationAnalysis = analyzeVisualizationNeeds(question, queryType, queryResults);
 
     // Return successful response with all relevant data
     return Response.json({
@@ -154,6 +171,7 @@ Important: Use the REAL numbers from the data, not placeholders!`;
         type: queryType,
         confidence
       },
+      visualization: visualizationAnalysis,
       metadata: {
         totalRows: queryResults.length,
         executionTime: Date.now(),
@@ -173,4 +191,120 @@ Important: Use the REAL numbers from the data, not placeholders!`;
       suggestion: "Please try asking a simpler question about Toronto's budget."
     }, { status: 500 });
   }
+}
+
+// Add this function after imports
+function analyzeVisualizationNeeds(question: string, queryType: string, data: any[]) {
+  const lowercaseQuestion = question.toLowerCase();
+  
+  // Patterns that suggest visualization would be helpful
+  const trendPatterns = ['trend', 'over time', 'yearly', 'annual', 'growth', 'change', 'years'];
+  const comparisonPatterns = ['compare', 'vs', 'versus', 'difference', 'between'];
+  const rankingPatterns = ['top', 'bottom', 'highest', 'lowest', 'most', 'least'];
+  const distributionPatterns = ['breakdown', 'distribution', 'share', 'percentage'];
+
+  // Check if data has enough points and right structure for charts
+  if (!data || data.length < 2) {
+    return { shouldVisualize: false };
+  }
+
+  const columns = Object.keys(data[0] || {});
+  
+  const hasYearColumn = columns.some(col => col.toLowerCase().includes('year'));
+  const hasAmountColumn = columns.some(col => {
+    const lower = col.toLowerCase();
+    return lower.includes('amount') || lower.includes('total') || lower.includes('spending') || 
+           lower.includes('revenue') || lower.includes('budget') || lower.includes('expense');
+  });
+
+  // Determine chart type based on patterns and data structure
+  if (trendPatterns.some(pattern => lowercaseQuestion.includes(pattern)) && hasYearColumn && hasAmountColumn) {
+    const xField = columns.find(col => col.toLowerCase().includes('year')) || columns[0];
+    const yField = columns.find(col => {
+      const lower = col.toLowerCase();
+      return lower.includes('amount') || lower.includes('total') || lower.includes('spending') || 
+             lower.includes('revenue') || lower.includes('budget') || lower.includes('expense');
+    }) || columns[1];
+    
+    return {
+      shouldVisualize: true,
+      chartType: 'line' as const,
+      chartConfig: {
+        xField,
+        yField,
+        title: 'Spending Trend Over Time'
+      }
+    };
+  }
+
+  if (comparisonPatterns.some(pattern => lowercaseQuestion.includes(pattern)) && hasAmountColumn) {
+    const xField = columns.find(col => {
+      const lower = col.toLowerCase();
+      return !lower.includes('amount') && !lower.includes('total') && !lower.includes('spending') && 
+             !lower.includes('revenue') && !lower.includes('budget') && !lower.includes('expense');
+    }) || columns[0];
+    const yField = columns.find(col => {
+      const lower = col.toLowerCase();
+      return lower.includes('amount') || lower.includes('total') || lower.includes('spending') || 
+             lower.includes('revenue') || lower.includes('budget') || lower.includes('expense');
+    }) || columns[1];
+    
+    return {
+      shouldVisualize: true,
+      chartType: 'bar' as const,
+      chartConfig: {
+        xField,
+        yField,
+        title: 'Comparison Analysis'
+      }
+    };
+  }
+
+  if (rankingPatterns.some(pattern => lowercaseQuestion.includes(pattern)) && data.length <= 10) {
+    const xField = columns.find(col => {
+      const lower = col.toLowerCase();
+      return !lower.includes('amount') && !lower.includes('total') && !lower.includes('spending') && 
+             !lower.includes('revenue') && !lower.includes('budget') && !lower.includes('expense');
+    }) || columns[0];
+    const yField = columns.find(col => {
+      const lower = col.toLowerCase();
+      return lower.includes('amount') || lower.includes('total') || lower.includes('spending') || 
+             lower.includes('revenue') || lower.includes('budget') || lower.includes('expense');
+    }) || columns[1];
+    
+    return {
+      shouldVisualize: true,
+      chartType: 'bar' as const,
+      chartConfig: {
+        xField,
+        yField,
+        title: 'Top Rankings'
+      }
+    };
+  }
+
+  if (distributionPatterns.some(pattern => lowercaseQuestion.includes(pattern)) && data.length <= 8) {
+    const xField = columns.find(col => {
+      const lower = col.toLowerCase();
+      return !lower.includes('amount') && !lower.includes('total') && !lower.includes('spending') && 
+             !lower.includes('revenue') && !lower.includes('budget') && !lower.includes('expense');
+    }) || columns[0];
+    const yField = columns.find(col => {
+      const lower = col.toLowerCase();
+      return lower.includes('amount') || lower.includes('total') || lower.includes('spending') || 
+             lower.includes('revenue') || lower.includes('budget') || lower.includes('expense');
+    }) || columns[1];
+    
+    return {
+      shouldVisualize: true,
+      chartType: 'pie' as const,
+      chartConfig: {
+        xField,
+        yField,
+        title: 'Distribution Breakdown'
+      }
+    };
+  }
+
+  return { shouldVisualize: false };
 } 
