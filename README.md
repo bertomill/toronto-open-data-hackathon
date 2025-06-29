@@ -5,8 +5,8 @@ This repository contains processed Toronto budget data for 2019-2024 and tools f
 ## Files
 
 ### Data
-- `toronto_budget_combined_2024_to_2019.csv` - Combined budget data from all years (2024-2019) stacked vertically
-  - Total rows: 112,762
+- `toronto_budget_combined_2024_to_2019-v2.csv` - Combined budget data from all years (2024-2019) stacked vertically
+  - Total rows: 112,765
   - Order: 2024 data at top, down to 2019 at bottom
   - All columns properly aligned across years
 

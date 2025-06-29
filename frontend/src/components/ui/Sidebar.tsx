@@ -70,21 +70,21 @@ export default function Sidebar({
       <button
         onClick={handleToggleCollapse}
         className={cn(
-          "hidden md:flex fixed top-4 z-50 p-2 rounded-lg bg-white/20 backdrop-blur-sm border border-white/20 shadow-sm hover:bg-white/30 transition-all duration-300",
+          "hidden md:flex fixed top-4 z-50 p-2 rounded-lg bg-blue-900/40 backdrop-blur-sm border border-blue-400/30 shadow-sm hover:bg-blue-800/50 transition-all duration-300",
           isCollapsed ? "left-20" : "left-60"
         )}
       >
         {isCollapsed ? (
-          <ChevronRight className="h-4 w-4 text-gray-600" />
+          <ChevronRight className="h-4 w-4 text-blue-200" />
         ) : (
-          <ChevronLeft className="h-4 w-4 text-gray-600" />
+          <ChevronLeft className="h-4 w-4 text-blue-200" />
         )}
       </button>
 
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed left-0 top-0 h-full bg-white/10 backdrop-blur-xl border-r border-white/20 shadow-xl z-40 transition-all duration-300 ease-in-out",
+          "fixed left-0 top-0 h-full bg-gradient-to-b from-slate-900/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-xl border-r border-blue-400/20 shadow-xl z-40 transition-all duration-300 ease-in-out",
           // Mobile responsive
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
           // Desktop width based on collapsed state
@@ -96,7 +96,7 @@ export default function Sidebar({
         {/* Header */}
         <div
           className={cn(
-            "p-6 border-b border-white/20",
+            "p-6 border-b border-blue-400/20",
             isCollapsed && "md:p-4"
           )}
         >
@@ -106,7 +106,7 @@ export default function Sidebar({
               isCollapsed ? "md:justify-center md:space-x-0" : "space-x-3"
             )}
           >
-            <div className="w-10 h-10 relative bg-white/90 rounded-full shadow-md border border-white/30 overflow-hidden flex-shrink-0">
+            <div className="w-10 h-10 relative bg-white/90 rounded-full shadow-md border border-blue-300/30 overflow-hidden flex-shrink-0">
               <Image
                 src="/dollarsense.png"
                 alt="DollarSense"
@@ -121,10 +121,10 @@ export default function Sidebar({
                 isCollapsed ? "md:w-0 md:opacity-0" : "w-auto opacity-100"
               )}
             >
-              <h1 className="text-lg font-semibold text-gray-800 whitespace-nowrap">
+              <h1 className="text-lg font-semibold text-white whitespace-nowrap">
                 DollarSense
               </h1>
-              <p className="text-xs text-gray-600 whitespace-nowrap">
+              <p className="text-xs text-blue-200 whitespace-nowrap">
                 Toronto Budget Explorer
               </p>
             </div>
@@ -148,8 +148,8 @@ export default function Sidebar({
                   "w-full text-left rounded-lg transition-all duration-300 group relative",
                   isCollapsed ? "md:p-3 md:flex md:justify-center" : "p-3",
                   isActive
-                    ? "bg-white/20 text-gray-800 border border-white/30 shadow-sm"
-                    : "hover:bg-white/10 text-gray-700 hover:text-gray-900"
+                    ? "bg-blue-600/30 text-white border border-blue-400/50 shadow-sm"
+                    : "hover:bg-blue-800/20 text-blue-100 hover:text-white"
                 )}
                 title={isCollapsed ? item.label : undefined}
               >
@@ -163,8 +163,8 @@ export default function Sidebar({
                     className={cn(
                       "h-5 w-5 flex-shrink-0",
                       isActive
-                        ? "text-gray-700"
-                        : "text-gray-500 group-hover:text-gray-700"
+                        ? "text-blue-200"
+                        : "text-blue-300 group-hover:text-white"
                     )}
                   />
                   <div
@@ -179,7 +179,7 @@ export default function Sidebar({
                     <div
                       className={cn(
                         "text-xs whitespace-nowrap",
-                        isActive ? "text-gray-600" : "text-gray-500"
+                        isActive ? "text-blue-200" : "text-blue-300"
                       )}
                     >
                       {item.description}
@@ -201,13 +201,13 @@ export default function Sidebar({
         {/* Footer */}
         <div
           className={cn(
-            "absolute bottom-0 left-0 right-0 p-4 border-t border-white/20",
+            "absolute bottom-0 left-0 right-0 p-4 border-t border-blue-400/20",
             isCollapsed && "md:p-2"
           )}
         >
           <div
             className={cn(
-              "text-xs text-gray-600 text-center transition-all duration-300 overflow-hidden",
+              "text-xs text-blue-200 text-center transition-all duration-300 overflow-hidden",
               isCollapsed ? "md:opacity-0" : "opacity-100"
             )}
           >

@@ -237,11 +237,11 @@ export default function Home() {
                 <div className="relative z-10">
                   {/* Minimal Header - only show when hero is not visible */}
                   {!showHero && (
-                    <header className="px-6 py-4 bg-white/95 backdrop-blur-md border-b border-gray-200/50 shadow-sm">
+                    <header className="px-6 py-4 bg-gradient-to-r from-slate-900/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-md border-b border-blue-400/30 shadow-sm">
                       <div className="max-w-4xl mx-auto">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 relative bg-white rounded-full shadow-md border border-gray-200 overflow-hidden">
+                            <div className="w-10 h-10 relative bg-white rounded-full shadow-md border border-blue-300/50 overflow-hidden">
                               <Image
                                 src="/dollarsense.png"
                                 alt="DollarSense"
@@ -250,11 +250,11 @@ export default function Home() {
                                 className="object-cover w-full h-full"
                               />
                             </div>
-                            <span className="text-xl font-semibold text-gray-800">
+                            <span className="text-xl font-semibold text-white">
                               DollarSense
                             </span>
                           </div>
-                          <div className="text-sm text-gray-600 font-medium bg-gray-100/80 px-3 py-1 rounded-full">
+                          <div className="text-sm text-blue-200 font-medium bg-blue-800/30 px-3 py-1 rounded-full border border-blue-400/30">
                             Toronto Budget Explorer
                           </div>
                         </div>

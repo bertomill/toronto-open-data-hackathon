@@ -171,7 +171,7 @@ function ElegantShape({
 function TorontoBudgetHero({ onStartExploring }: TorontoBudgetHeroProps) {
   return (
     <AuroraBackground className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900">
-      <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden py-16 px-4">
+      <div className="relative h-screen w-full flex items-center justify-center overflow-hidden px-4">
         {/* Pixelated Toronto Skyline Background */}
         <div
           className="absolute inset-0 opacity-30 bg-cover bg-center bg-no-repeat"
