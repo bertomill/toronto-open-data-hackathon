@@ -95,89 +95,11 @@ export default function Home() {
     setSidebarCollapsed(collapsed);
   };
 
-  const examplePrompts = [
-    {
-      title: "Show me the total salary expenses year over year",
-      expanded: [
-        "Show me the total salary expenses year over year with percentage changes",
-        "Compare salary expenses across all departments from 2019 to 2024",
-        "What's the trend in employee compensation costs over the past 6 years?",
-        "How much has the city's total payroll budget increased since 2019?",
-      ],
-    },
-    {
-      title: "How much tax revenue was collected in 2024?",
-      expanded: [
-        "How much tax revenue was collected in 2024 compared to 2023?",
-        "Break down all revenue sources for 2024 including taxes, fees, and grants",
-        "What percentage of 2024 revenue came from property taxes?",
-        "Show me the top 5 revenue sources for the city in 2024",
-      ],
-    },
-    {
-      title: "What department does the city spend the most on?",
-      expanded: [
-        "What department does the city spend the most on and by how much?",
-        "Rank all city departments by total spending in 2024",
-        "Which departments have the largest budget allocations?",
-        "Compare spending between police, fire, and transit departments",
-      ],
-    },
-    {
-      title: "How much has the budget grown year over year?",
-      expanded: [
-        "How much has the total budget grown year over year as a percentage?",
-        "Show me the annual budget growth rate from 2019 to 2024",
-        "What's driving the biggest increases in city spending?",
-        "Compare budget growth to Toronto's population and inflation growth",
-      ],
-    },
-    {
-      title: "What program budget has grown the most?",
-      expanded: [
-        "What program budget has grown the most in dollar terms and percentage?",
-        "Which programs saw the biggest budget increases from 2023 to 2024?",
-        "Show me the top 10 programs with the highest growth rates",
-        "What new programs were added and how much do they cost?",
-      ],
-    },
-  ];
-
-  const analysisOptions = [
-    {
-      category: "Understand",
-      color: "bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200",
-      icon: TrendingUp,
-      options: [
-        "budget trends over time",
-        "expense vs revenue patterns",
-        "top spending programs",
-        "year-over-year changes",
-      ],
-    },
-    {
-      category: "Create",
-      color:
-        "bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200",
-      icon: BarChart3,
-      options: [
-        "budget comparison charts",
-        "spending visualization",
-        "trend analysis dashboard",
-        "interactive budget explorer",
-      ],
-    },
-    {
-      category: "Explore",
-      color: "bg-green-50 hover:bg-green-100 text-green-700 border-green-200",
-      icon: Search,
-      options: [
-        "program deep dives",
-        "category breakdowns",
-        "service-level insights",
-        "budget allocation patterns",
-      ],
-    },
+  const quickSuggestions = [
+    "How has the budget changed from 2019 to 2024?",
+    "What are the top 5 most expensive programs in 2024?",
+    "How much did Toronto spend on Fire Services in 2024?",
+    "What was Toronto's total revenue vs expenses in 2023?",
   ];
 
   if (loading) {
@@ -290,14 +212,34 @@ export default function Home() {
                       </div>
                     )}
 
-                    {/* Search Input - Now prominently displayed */}
-                    <div className="mb-12" id="search-input">
+                    {/* Simple Suggestions - Above the input */}
+                    <div className="mb-8">
+                      <div className="text-center mb-6">
+                        <p className="text-gray-600 text-sm">
+                          Try asking me...
+                        </p>
+                      </div>
+                      <div className="max-w-2xl mx-auto space-y-3 mb-8">
+                        {quickSuggestions.map((suggestion, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleQuerySubmit(suggestion)}
+                            className="w-full text-left px-6 py-4 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl hover:shadow-md hover:border-gray-300 transition-all duration-200 text-gray-700"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Search Input - Now below suggestions */}
+                    <div className="mb-16" id="search-input">
                       <div className="relative max-w-2xl mx-auto">
                         <div className="flex items-center space-x-4 px-6 py-4 border border-gray-200 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
                           <MessageCircle className="w-5 h-5 text-gray-400" />
                           <input
                             type="text"
-                            placeholder="Ask me anything about Toronto's budget data..."
+                            placeholder="Or ask your own question about Toronto's budget..."
                             className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
                             onKeyPress={(e) => {
                               if (
@@ -323,92 +265,6 @@ export default function Home() {
                             <Search className="w-5 h-5" />
                           </button>
                         </div>
-                      </div>
-                    </div>
-
-                    {/* Suggestion Categories */}
-                    <div className="grid md:grid-cols-3 gap-8 mb-16">
-                      {analysisOptions.map((category) => {
-                        const IconComponent = category.icon;
-                        return (
-                          <div key={category.category} className="space-y-4">
-                            <div className="flex items-center space-x-3 mb-4">
-                              <IconComponent className="w-5 h-5 text-gray-600" />
-                              <h3 className="text-lg font-medium text-gray-800">
-                                {category.category}
-                              </h3>
-                            </div>
-                            <div className="space-y-3">
-                              {category.options.map((option) => (
-                                <button
-                                  key={option}
-                                  onClick={() => handleQuerySubmit(option)}
-                                  className={`
-                                    w-full text-left px-4 py-3 rounded-full border transition-all duration-200
-                                    hover:shadow-sm active:scale-[0.98] text-sm font-medium bg-white/80 backdrop-blur-sm
-                                    ${category.color}
-                                  `}
-                                >
-                                  {option}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Example Prompts */}
-                    <div className="mb-16">
-                      <h3 className="text-lg font-medium text-gray-800 mb-6 text-center">
-                        Try asking me...
-                      </h3>
-                      <div className="space-y-3 max-w-2xl mx-auto">
-                        {examplePrompts.map((prompt, index) => (
-                          <div
-                            key={index}
-                            className="border border-gray-200 rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
-                          >
-                            <button
-                              onClick={() =>
-                                setExpandedPrompt(
-                                  expandedPrompt === prompt.title
-                                    ? null
-                                    : prompt.title
-                                )
-                              }
-                              className="w-full text-left px-6 py-4 focus:outline-none"
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-700 font-medium">
-                                  {prompt.title}
-                                </span>
-                                <span className="text-gray-400 text-sm">
-                                  {expandedPrompt === prompt.title ? "−" : "+"}
-                                </span>
-                              </div>
-                            </button>
-                            {expandedPrompt === prompt.title && (
-                              <div className="px-6 pb-4 border-t border-gray-100 mt-2 pt-4">
-                                <div className="space-y-2">
-                                  {prompt.expanded.map(
-                                    (expandedPrompt, expandedIndex) => (
-                                      <button
-                                        key={expandedIndex}
-                                        onClick={() =>
-                                          handleQuerySubmit(expandedPrompt)
-                                        }
-                                        className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                      >
-                                        {expandedPrompt}
-                                      </button>
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
                       </div>
                     </div>
 
