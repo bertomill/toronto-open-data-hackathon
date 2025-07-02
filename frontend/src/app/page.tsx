@@ -12,6 +12,7 @@ import DataViewer from "@/components/DataViewer";
 import HowItWorks from "@/components/HowItWorks";
 import { cn } from "@/lib/utils";
 import { BudgetData } from "@/types";
+import SearchInput from "@/app/components/SearchInput";
 
 export default function Home() {
   const [data, setData] = useState<BudgetData[]>([]);
@@ -232,40 +233,12 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Search Input - Now below suggestions */}
+                    {/* Search Input with Autocomplete */}
                     <div className="mb-16" id="search-input">
-                      <div className="relative max-w-2xl mx-auto">
-                        <div className="flex items-center space-x-4 px-6 py-4 border border-gray-200 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
-                          <MessageCircle className="w-5 h-5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Or ask your own question about Toronto's budget..."
-                            className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
-                            onKeyPress={(e) => {
-                              if (
-                                e.key === "Enter" &&
-                                e.currentTarget.value.trim()
-                              ) {
-                                handleQuerySubmit(e.currentTarget.value);
-                              }
-                            }}
-                          />
-                          <button
-                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                            onClick={(e) => {
-                              const input =
-                                e.currentTarget.parentElement?.querySelector(
-                                  "input"
-                                );
-                              if (input && input.value.trim()) {
-                                handleQuerySubmit(input.value);
-                              }
-                            }}
-                          >
-                            <Search className="w-5 h-5" />
-                          </button>
-                        </div>
-                      </div>
+                      <SearchInput
+                        onQuerySubmit={handleQuerySubmit}
+                        placeholder="Or ask your own question about Toronto's budget..."
+                      />
                     </div>
 
                     {/* Dataset Stats */}
