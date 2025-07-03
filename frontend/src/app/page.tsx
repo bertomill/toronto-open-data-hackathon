@@ -2,9 +2,16 @@
 
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
-import { TrendingUp, MessageCircle, BarChart3, Search } from "lucide-react";
+import {
+  TrendingUp,
+  MessageCircle,
+  BarChart3,
+  Search,
+  Sparkles,
+  DollarSign,
+} from "lucide-react";
 import Image from "next/image";
-import AIAnalysis from "./components/AIAnalysis";
+import AIAnalysis from "../components/analysis/AIAnalysis";
 import TorontoBudgetHero from "@/components/ui/TorontoBudgetHero";
 import Sidebar from "@/components/ui/Sidebar";
 import DataDispensations from "@/components/DataDispensations";
@@ -12,7 +19,7 @@ import DataViewer from "@/components/DataViewer";
 import HowItWorks from "@/components/HowItWorks";
 import { cn } from "@/lib/utils";
 import { BudgetData } from "@/types";
-import SearchInput from "@/app/components/SearchInput";
+import SearchInput from "@/components/analysis/SearchInput";
 
 export default function Home() {
   const [data, setData] = useState<BudgetData[]>([]);
@@ -213,32 +220,73 @@ export default function Home() {
                       </div>
                     )}
 
-                    {/* Simple Suggestions - Above the input */}
-                    <div className="mb-8">
-                      <div className="text-center mb-6">
-                        <p className="text-gray-600 text-sm">
-                          Try asking me...
-                        </p>
-                      </div>
-                      <div className="max-w-2xl mx-auto space-y-3 mb-8">
-                        {quickSuggestions.map((suggestion, index) => (
-                          <button
-                            key={index}
-                            onClick={() => handleQuerySubmit(suggestion)}
-                            className="w-full text-left px-6 py-4 bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl hover:shadow-md hover:border-gray-300 transition-all duration-200 text-gray-700"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
                     {/* Search Input with Autocomplete */}
-                    <div className="mb-16" id="search-input">
+                    <div className="mb-10" id="search-input">
                       <SearchInput
                         onQuerySubmit={handleQuerySubmit}
-                        placeholder="Or ask your own question about Toronto's budget..."
+                        placeholder="Ask a question about Toronto's budget..."
                       />
+                    </div>
+
+                    {/* Enhanced Suggestions */}
+                    <div className="mb-12">
+                      <div className="text-center mb-8">
+                        <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-full border border-gray-200/50">
+                          <p className="text-gray-600 text-sm font-medium">
+                            Or try asking...
+                          </p>
+                        </div>
+                      </div>
+                      <div className="max-w-2xl mx-auto space-y-4">
+                        {quickSuggestions.map((suggestion, index) => {
+                          // Assign different icons based on suggestion content
+                          const getIcon = (text: string) => {
+                            if (
+                              text.includes("top") ||
+                              text.includes("expensive")
+                            )
+                              return BarChart3;
+                            if (text.includes("revenue") || text.includes("vs"))
+                              return TrendingUp;
+                            if (
+                              text.includes("changed") ||
+                              text.includes("2019")
+                            )
+                              return TrendingUp;
+                            return DollarSign;
+                          };
+
+                          const IconComponent = getIcon(suggestion);
+
+                          return (
+                            <button
+                              key={index}
+                              onClick={() => handleQuerySubmit(suggestion)}
+                              className="w-full group relative overflow-hidden bg-gradient-to-r from-white via-white to-blue-50/20 backdrop-blur-sm border border-gray-200/60 rounded-2xl hover:shadow-xl hover:border-blue-300/40 transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98]"
+                            >
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-50/20 to-blue-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                              <div className="relative flex items-center space-x-4 px-6 py-5">
+                                <div className="p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200/50 group-hover:from-blue-100 group-hover:to-blue-200/50 transition-all duration-300">
+                                  <IconComponent className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors duration-300" />
+                                </div>
+
+                                <div className="flex-1 text-left">
+                                  <span className="text-gray-700 group-hover:text-gray-900 font-medium leading-relaxed transition-colors duration-300">
+                                    {suggestion}
+                                  </span>
+                                </div>
+
+                                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                  <div className="p-2 rounded-lg bg-blue-100/50">
+                                    <Search className="w-4 h-4 text-blue-600" />
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
 
                     {/* Dataset Stats */}
