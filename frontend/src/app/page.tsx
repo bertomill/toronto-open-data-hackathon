@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
-import { TrendingUp, MessageCircle, BarChart3, Search } from "lucide-react";
+import { TrendingUp, BarChart3, Search, DollarSign } from "lucide-react";
 import Image from "next/image";
-import AIAnalysis from "./components/AIAnalysis";
+import AIAnalysis from "../components/analysis/AIAnalysis";
 import TorontoBudgetHero from "@/components/ui/TorontoBudgetHero";
 import Sidebar from "@/components/ui/Sidebar";
 import DataDispensations from "@/components/DataDispensations";
@@ -12,6 +12,7 @@ import DataViewer from "@/components/DataViewer";
 import HowItWorks from "@/components/HowItWorks";
 import { cn } from "@/lib/utils";
 import { BudgetData } from "@/types";
+import SearchInput from "@/components/analysis/SearchInput";
 
 export default function Home() {
   const [data, setData] = useState<BudgetData[]>([]);
@@ -19,7 +20,6 @@ export default function Home() {
   const [totalBudget, setTotalBudget] = useState(0);
   const [showAI, setShowAI] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState<string>("");
-  const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
   const [showHero, setShowHero] = useState(true);
   const [currentPage, setCurrentPage] = useState("home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -95,89 +95,11 @@ export default function Home() {
     setSidebarCollapsed(collapsed);
   };
 
-  const examplePrompts = [
-    {
-      title: "Show me the total salary expenses year over year",
-      expanded: [
-        "Show me the total salary expenses year over year with percentage changes",
-        "Compare salary expenses across all departments from 2019 to 2024",
-        "What's the trend in employee compensation costs over the past 6 years?",
-        "How much has the city's total payroll budget increased since 2019?",
-      ],
-    },
-    {
-      title: "How much tax revenue was collected in 2024?",
-      expanded: [
-        "How much tax revenue was collected in 2024 compared to 2023?",
-        "Break down all revenue sources for 2024 including taxes, fees, and grants",
-        "What percentage of 2024 revenue came from property taxes?",
-        "Show me the top 5 revenue sources for the city in 2024",
-      ],
-    },
-    {
-      title: "What department does the city spend the most on?",
-      expanded: [
-        "What department does the city spend the most on and by how much?",
-        "Rank all city departments by total spending in 2024",
-        "Which departments have the largest budget allocations?",
-        "Compare spending between police, fire, and transit departments",
-      ],
-    },
-    {
-      title: "How much has the budget grown year over year?",
-      expanded: [
-        "How much has the total budget grown year over year as a percentage?",
-        "Show me the annual budget growth rate from 2019 to 2024",
-        "What's driving the biggest increases in city spending?",
-        "Compare budget growth to Toronto's population and inflation growth",
-      ],
-    },
-    {
-      title: "What program budget has grown the most?",
-      expanded: [
-        "What program budget has grown the most in dollar terms and percentage?",
-        "Which programs saw the biggest budget increases from 2023 to 2024?",
-        "Show me the top 10 programs with the highest growth rates",
-        "What new programs were added and how much do they cost?",
-      ],
-    },
-  ];
-
-  const analysisOptions = [
-    {
-      category: "Understand",
-      color: "bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200",
-      icon: TrendingUp,
-      options: [
-        "budget trends over time",
-        "expense vs revenue patterns",
-        "top spending programs",
-        "year-over-year changes",
-      ],
-    },
-    {
-      category: "Create",
-      color:
-        "bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200",
-      icon: BarChart3,
-      options: [
-        "budget comparison charts",
-        "spending visualization",
-        "trend analysis dashboard",
-        "interactive budget explorer",
-      ],
-    },
-    {
-      category: "Explore",
-      color: "bg-green-50 hover:bg-green-100 text-green-700 border-green-200",
-      icon: Search,
-      options: [
-        "program deep dives",
-        "category breakdowns",
-        "service-level insights",
-        "budget allocation patterns",
-      ],
-    },
+  const quickSuggestions = [
+    "How has the budget changed from 2019 to 2024?",
+    "What are the top 5 most expensive programs in 2024?",
+    "How much did Toronto spend on Fire Services in 2024?",
+    "What was Toronto's total revenue vs expenses in 2023?",
   ];
 
   if (loading) {
@@ -290,125 +212,72 @@ export default function Home() {
                       </div>
                     )}
 
-                    {/* Search Input - Now prominently displayed */}
-                    <div className="mb-12" id="search-input">
-                      <div className="relative max-w-2xl mx-auto">
-                        <div className="flex items-center space-x-4 px-6 py-4 border border-gray-200 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow">
-                          <MessageCircle className="w-5 h-5 text-gray-400" />
-                          <input
-                            type="text"
-                            placeholder="Ask me anything about Toronto's budget data..."
-                            className="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-500"
-                            onKeyPress={(e) => {
-                              if (
-                                e.key === "Enter" &&
-                                e.currentTarget.value.trim()
-                              ) {
-                                handleQuerySubmit(e.currentTarget.value);
-                              }
-                            }}
-                          />
-                          <button
-                            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                            onClick={(e) => {
-                              const input =
-                                e.currentTarget.parentElement?.querySelector(
-                                  "input"
-                                );
-                              if (input && input.value.trim()) {
-                                handleQuerySubmit(input.value);
-                              }
-                            }}
-                          >
-                            <Search className="w-5 h-5" />
-                          </button>
+                    {/* Search Input with Autocomplete */}
+                    <div className="mb-10" id="search-input">
+                      <SearchInput
+                        onQuerySubmit={handleQuerySubmit}
+                        placeholder="Ask a question about Toronto's budget..."
+                      />
+                    </div>
+
+                    {/* Enhanced Suggestions */}
+                    <div className="mb-12">
+                      <div className="text-center mb-8">
+                        <div className="inline-flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-blue-50/50 rounded-full border border-gray-200/50">
+                          <p className="text-gray-600 text-sm font-medium">
+                            Or try asking...
+                          </p>
                         </div>
                       </div>
-                    </div>
+                      <div className="max-w-2xl mx-auto space-y-4">
+                        {quickSuggestions.map((suggestion, index) => {
+                          // Assign different icons based on suggestion content
+                          const getIcon = (text: string) => {
+                            if (
+                              text.includes("top") ||
+                              text.includes("expensive")
+                            )
+                              return BarChart3;
+                            if (text.includes("revenue") || text.includes("vs"))
+                              return TrendingUp;
+                            if (
+                              text.includes("changed") ||
+                              text.includes("2019")
+                            )
+                              return TrendingUp;
+                            return DollarSign;
+                          };
 
-                    {/* Suggestion Categories */}
-                    <div className="grid md:grid-cols-3 gap-8 mb-16">
-                      {analysisOptions.map((category) => {
-                        const IconComponent = category.icon;
-                        return (
-                          <div key={category.category} className="space-y-4">
-                            <div className="flex items-center space-x-3 mb-4">
-                              <IconComponent className="w-5 h-5 text-gray-600" />
-                              <h3 className="text-lg font-medium text-gray-800">
-                                {category.category}
-                              </h3>
-                            </div>
-                            <div className="space-y-3">
-                              {category.options.map((option) => (
-                                <button
-                                  key={option}
-                                  onClick={() => handleQuerySubmit(option)}
-                                  className={`
-                                    w-full text-left px-4 py-3 rounded-full border transition-all duration-200
-                                    hover:shadow-sm active:scale-[0.98] text-sm font-medium bg-white/80 backdrop-blur-sm
-                                    ${category.color}
-                                  `}
-                                >
-                                  {option}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                          const IconComponent = getIcon(suggestion);
 
-                    {/* Example Prompts */}
-                    <div className="mb-16">
-                      <h3 className="text-lg font-medium text-gray-800 mb-6 text-center">
-                        Try asking me...
-                      </h3>
-                      <div className="space-y-3 max-w-2xl mx-auto">
-                        {examplePrompts.map((prompt, index) => (
-                          <div
-                            key={index}
-                            className="border border-gray-200 rounded-2xl bg-white/90 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow"
-                          >
+                          return (
                             <button
-                              onClick={() =>
-                                setExpandedPrompt(
-                                  expandedPrompt === prompt.title
-                                    ? null
-                                    : prompt.title
-                                )
-                              }
-                              className="w-full text-left px-6 py-4 focus:outline-none"
+                              key={index}
+                              onClick={() => handleQuerySubmit(suggestion)}
+                              className="w-full group relative overflow-hidden bg-gradient-to-r from-white via-white to-blue-50/20 backdrop-blur-sm border border-gray-200/60 rounded-2xl hover:shadow-xl hover:border-blue-300/40 transition-all duration-300 ease-out hover:scale-[1.02] active:scale-[0.98]"
                             >
-                              <div className="flex items-center justify-between">
-                                <span className="text-gray-700 font-medium">
-                                  {prompt.title}
-                                </span>
-                                <span className="text-gray-400 text-sm">
-                                  {expandedPrompt === prompt.title ? "−" : "+"}
-                                </span>
-                              </div>
-                            </button>
-                            {expandedPrompt === prompt.title && (
-                              <div className="px-6 pb-4 border-t border-gray-100 mt-2 pt-4">
-                                <div className="space-y-2">
-                                  {prompt.expanded.map(
-                                    (expandedPrompt, expandedIndex) => (
-                                      <button
-                                        key={expandedIndex}
-                                        onClick={() =>
-                                          handleQuerySubmit(expandedPrompt)
-                                        }
-                                        className="block w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                      >
-                                        {expandedPrompt}
-                                      </button>
-                                    )
-                                  )}
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-50/20 to-blue-100/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                              <div className="relative flex items-center space-x-4 px-6 py-5">
+                                <div className="p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200/50 group-hover:from-blue-100 group-hover:to-blue-200/50 transition-all duration-300">
+                                  <IconComponent className="w-5 h-5 text-gray-600 group-hover:text-blue-600 transition-colors duration-300" />
+                                </div>
+
+                                <div className="flex-1 text-left">
+                                  <span className="text-gray-700 group-hover:text-gray-900 font-medium leading-relaxed transition-colors duration-300">
+                                    {suggestion}
+                                  </span>
+                                </div>
+
+                                <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                  <div className="p-2 rounded-lg bg-blue-100/50">
+                                    <Search className="w-4 h-4 text-blue-600" />
+                                  </div>
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        ))}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
