@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import {
-  MessageCircle,
   Search,
   Sparkles,
   TrendingUp,
@@ -258,9 +257,7 @@ export default function SearchInput({
                             : "bg-gray-200/50 text-gray-600"
                         }
                       `}
-                      >
-                        {suggestion.category}
-                      </div>
+                      ></div>
                     </div>
                   </div>
                 </button>

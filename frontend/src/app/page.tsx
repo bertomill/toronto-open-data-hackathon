@@ -2,14 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
-import {
-  TrendingUp,
-  MessageCircle,
-  BarChart3,
-  Search,
-  Sparkles,
-  DollarSign,
-} from "lucide-react";
+import { TrendingUp, BarChart3, Search, DollarSign } from "lucide-react";
 import Image from "next/image";
 import AIAnalysis from "../components/analysis/AIAnalysis";
 import TorontoBudgetHero from "@/components/ui/TorontoBudgetHero";
@@ -27,7 +20,6 @@ export default function Home() {
   const [totalBudget, setTotalBudget] = useState(0);
   const [showAI, setShowAI] = useState(false);
   const [selectedQuery, setSelectedQuery] = useState<string>("");
-  const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
   const [showHero, setShowHero] = useState(true);
   const [currentPage, setCurrentPage] = useState("home");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
