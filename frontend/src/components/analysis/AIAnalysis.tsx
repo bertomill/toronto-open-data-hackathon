@@ -17,7 +17,7 @@ import {
   Eye,
   Table,
 } from "lucide-react";
-import ChartVisualization from "./ChartVisualization";
+import ChartVisualization from "../analysis/ChartVisualization";
 import {
   BudgetRecord,
   AIAnalysisProps,

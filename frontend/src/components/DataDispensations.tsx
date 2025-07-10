@@ -114,8 +114,8 @@ export default function DataDispensations({ data }: DataDispensationsProps) {
               onChange={(e) => setSelectedYear(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
             >
-              {years.map((year) => (
-                <option key={year} value={year}>
+              {years.map((year, index) => (
+                <option key={`year-${year}-${index}`} value={year}>
                   {year}
                 </option>
               ))}
