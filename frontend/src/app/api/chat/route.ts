@@ -72,12 +72,17 @@ export async function POST(req: Request) {
       return createStreamingResponse(budgetResponse.answer);
     }
 
+    // Get current date/time in Toronto timezone
+    const currentDateTime = new Date().toLocaleString('en-US', { timeZone: 'America/Toronto' });
+
     // Fallback to general assistance if no budget data found
     const result = await streamText({
       model: openai('gpt-4o-mini'),
       system: `You are a helpful assistant for the Toronto Budget Navigator app. 
 
 This app helps users explore Toronto's municipal budget data from 2019-2024. 
+
+The current date and time is ${currentDateTime}.
 
 If users ask budget-related questions, suggest they try:
 - "What was Toronto's total budget in 2024?"
@@ -102,4 +107,4 @@ Be conversational and helpful. If the question wasn't about Toronto's budget, tr
     const errorText = 'Sorry, I encountered an error. Please try asking about Toronto\'s budget data, such as "What was the total budget in 2024?" or "How much was spent on police?"';
     return createStreamingResponse(errorText);
   }
-} 
+}
