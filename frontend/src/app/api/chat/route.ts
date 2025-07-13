@@ -78,11 +78,9 @@ export async function POST(req: Request) {
     // Fallback to general assistance if no budget data found
     const result = await streamText({
       model: openai('gpt-4o-mini'),
-      system: `You are a helpful assistant for the Toronto Budget Navigator app. 
+      system: `The current date and time is ${currentDateTime}. You are a helpful assistant for the Toronto Budget Navigator app. 
 
 This app helps users explore Toronto's municipal budget data from 2019-2024. 
-
-The current date and time is ${currentDateTime}.
 
 If users ask budget-related questions, suggest they try:
 - "What was Toronto's total budget in 2024?"
